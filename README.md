@@ -40,7 +40,8 @@ traces:
 ```
 
 It will generates
-![Generated SVG](./doc/svgGenerator.svg)
+
+![Generated SVG](./docs/svgGenerator.svg?sanitize=true)
 
 Note: The generated SVG contains embedded metadata. Opening it again with `traceChart` allows you to re-edit the original trace definition.
 

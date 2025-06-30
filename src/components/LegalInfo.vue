@@ -9,7 +9,7 @@
 
         <section>
             <h3>Licence</h3>
-            <p>MIT</p>
+            <p><a href="https://github.com/restimel/traceChart/blob/main/LICENSE" target="blank">MIT</a></p>
         </section>
 
         <section>
