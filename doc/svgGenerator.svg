@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="970" height="720" viewBox="0 0 970 720">
+    <!-- trace-chart: Generated from Trace-Chart (http://localhost:5173/) [0.1.0]
+categories:
+- svgGenerator: {#FF6F00}
+- parser: {#006FFF}
+- components: {#388E3C}
+traces:
+- generateSvgFromCode[svgGenerator]//  architecture to generate the svg
+-- stringToChartData[parser]// [parse trace chart code] 
+--- parseCategories[parser]
+--- parseTrace[parser]
+-- svgBody[svgGenerator]// [generate the svg] 
+--- svgContent[components]
+--- svgLegend[components]
+--- svgTraceChart[svgGenerator]//  write the trace chart code
+---- chartDataToString[parser]
+----- categoriesStr[parser]
+----- allTraceStr[parser]
+------ traceStr[parser]
+--- svgStyle[components]
+--- svgDefs[svgGenerator]
+-->
+    
+    <style>
+        svg { background: #FFFFFF; }
+
+        .marker {
+            stroke: context-stroke;
+            stroke-width: 2;
+        }
+
+        .timeline {
+            stroke: #003300;
+            stroke-width: 4;
+            stroke-dasharray: 10 2;
+            marker-end: url(#arrowhead);
+            marker-start: url(#marker);
+        }
+
+        .svgGenerator {
+    stroke: #FF6F00;
+    fill: #FF6F00;
+}
+.parser {
+    stroke: #006FFF;
+    fill: #006FFF;
+}
+.components {
+    stroke: #388E3C;
+    fill: #388E3C;
+}
+
+        .start-method {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 5 4;
+            marker-end: url(#arrowhead);
+            marker-start: url(#bullet);
+        }
+
+        .stop-method {
+            fill: none;
+            stroke-width: 2;
+            stroke-dasharray: 5 4;
+
+            marker-end: url(#arrowhead);
+        }
+
+        .period-method {
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .call-method {
+            fill: none;
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+            marker-start: url(#bullet);
+        }
+
+        .inner-call {
+            stroke-width: 2;
+            marker-start: url(#marker);
+        }
+
+        .label-method {
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            font-weight: bold;
+            text-anchor: start;
+            dominant-baseline: middle;
+            stroke: none;
+        }
+
+        .label-call {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-anchor: start;
+            dominant-baseline: middle;
+            stroke: none;
+        }
+
+        .label-info {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            stroke: none;
+            fill: #009700;
+        }
+
+        .details-methods,
+        .details-info {
+            font-family: Arial, sans-serif;
+            font-size: 9.5px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            stroke: none;
+            fill: #979797;
+        }
+
+        .details-methods {
+            text-anchor: start;
+        }
+
+        .info-box {
+            stroke: #009700;
+            fill: #EDF7E6;
+            stroke-width: 2;
+        }
+
+        .link-info {
+            stroke: #009700;
+            stroke-width: 0.5;
+            stroke-dasharray: 15 2;
+            marker-end: url(#bullet);
+        }
+
+        .warning.link-info {
+            stroke: #FF0000;
+        }
+        .warning.details-info {
+            fill: #FF0000;
+        }
+
+        .legend {
+            text-anchor: start;
+            dominant-baseline: middle;
+            stroke-width: 4;
+        }
+        .legend text {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            fill: black;
+            stroke: none;
+        }
+
+        .legend-box {
+            fill: none;
+            stroke: black;
+        }
+
+    </style>
+    
+    
+    <g class="legend" transform="translate(690, 20)">
+        <rect x="-20" y="-20" width="280" height="100" class="legend-box" />
+
+        
+        <g class="svgGenerator" transform="translate(0, 0)">
+            <line x1="0" y1="0" x2="30" y2="0" />
+            <text x="40" y="0" class="label-legend">svgGenerator</text>
+        </g>
+        
+        <g class="parser" transform="translate(0, 20)">
+            <line x1="0" y1="0" x2="30" y2="0" />
+            <text x="40" y="0" class="label-legend">parser</text>
+        </g>
+        
+        <g class="components" transform="translate(0, 40)">
+            <line x1="0" y1="0" x2="30" y2="0" />
+            <text x="40" y="0" class="label-legend">components</text>
+        </g>
+        
+    </g>
+    
+    
+    <defs>
+        <marker id="arrowhead" markerWidth="5" markerHeight="7" refX="4" refY="1.75" orient="auto">
+            <polygon points="0,0 5,1.75 0,3.5" fill="context-stroke" />
+        </marker>
+
+        <marker id="bullet" markerWidth="5" markerHeight="5" refX="2" refY="2" orient="auto">
+            <circle cx="2" cy="2" r="2" fill="context-stroke" />
+        </marker>
+
+        <marker id="bullet2" markerWidth="5" markerHeight="5" refX="2" refY="2" orient="auto">
+            <circle cx="2" cy="2" r="2" fill="context-stroke" />
+        </marker>
+
+        <marker id="marker" markerWidth="5" markerHeight="5" refX="0" refY="2" orient="auto">
+            <line x1="0" y1="0" x2="0" y2="4" class="marker" />
+        </marker>
+    </defs>
+    
+    
+    <g class="state-timeline" transform="translate(210, 30)">
+        <line x1="0" y1="0" x2="0" y2="660" class="timeline" />
+        <g class="svgGenerator" transform="translate(50, 30)">
+<line x1="-70" y1="0" x2="-50" y2="0" class="link-info" />
+<text x="-145" y="0" class="details-info">architecture to generate the svg</text>
+    <text x="10" y="0" class="label-method">generateSvgFromCode</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="570" class="period-method" />
+    <line x1="0" y1="570" x2="-50" y2="570" class="stop-method" />
+<g class="parser" transform="translate(50, 30)">
+<line x1="-120" y1="0" x2="-50" y2="0" class="link-info" />
+<rect x="-270" y="-15" width="150" height="30" rx="10" class="info-box" />
+<text x="-195" y="0" class="label-info">parse trace chart code</text>
+    <text x="10" y="0" class="label-method">stringToChartData</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="90" class="period-method" />
+    <line x1="0" y1="90" x2="-50" y2="90" class="stop-method" />
+
+    <g class="call parser" transform="translate(50, 30)">
+        
+        <text x="10" y="0" class="label-call">parseCategories</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+
+    <g class="call parser" transform="translate(50, 60)">
+        
+        <text x="10" y="0" class="label-call">parseTrace</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+</g>
+<g class="svgGenerator" transform="translate(50, 150)">
+<line x1="-120" y1="0" x2="-50" y2="0" class="link-info" />
+<rect x="-270" y="-15" width="150" height="30" rx="10" class="info-box" />
+<text x="-195" y="0" class="label-info">generate the svg</text>
+    <text x="10" y="0" class="label-method">svgBody</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="390" class="period-method" />
+    <line x1="0" y1="390" x2="-50" y2="390" class="stop-method" />
+
+    <g class="call components" transform="translate(50, 30)">
+        
+        <text x="10" y="0" class="label-call">svgContent</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+
+    <g class="call components" transform="translate(50, 60)">
+        
+        <text x="10" y="0" class="label-call">svgLegend</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+<g class="svgGenerator" transform="translate(50, 90)">
+<line x1="-170" y1="0" x2="-50" y2="0" class="link-info" />
+<text x="-245" y="0" class="details-info">write the trace chart code</text>
+    <text x="10" y="0" class="label-method">svgTraceChart</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="210" class="period-method" />
+    <line x1="0" y1="210" x2="-50" y2="210" class="stop-method" />
+<g class="parser" transform="translate(50, 30)">
+
+    <text x="10" y="0" class="label-method">chartDataToString</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="150" class="period-method" />
+    <line x1="0" y1="150" x2="-50" y2="150" class="stop-method" />
+
+    <g class="call parser" transform="translate(50, 30)">
+        
+        <text x="10" y="0" class="label-call">categoriesStr</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+<g class="parser" transform="translate(50, 60)">
+
+    <text x="10" y="0" class="label-method">allTraceStr</text>
+    <line x1="-50" y1="0" x2="0" y2="0" class="start-method" />
+    <line x1="0" y1="0" x2="0" y2="60" class="period-method" />
+    <line x1="0" y1="60" x2="-50" y2="60" class="stop-method" />
+
+    <g class="call parser" transform="translate(50, 30)">
+        
+        <text x="10" y="0" class="label-call">traceStr</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+</g>
+</g>
+</g>
+
+    <g class="call components" transform="translate(50, 330)">
+        
+        <text x="10" y="0" class="label-call">svgStyle</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+
+    <g class="call svgGenerator" transform="translate(50, 360)">
+        
+        <text x="10" y="0" class="label-call">svgDefs</text>
+        <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
+    </g>
+    
+</g>
+</g>
+    </g>
+    
+</svg>
