@@ -18,25 +18,25 @@ Below is an example of a trace definition and the structure it represents:
 
 ```yaml
 categories:
-- svgGenerator: {#FF6F00}
-- parser: {#006FFF}
-- components: {#388E3C}
++ svgGenerator: {#FF6F00}
++ parser: {#006FFF}
++ components: {#388E3C}
 
 traces:
-- generateSvgFromCode[svgGenerator] // architecture to generate the svg
--- stringToChartData[parser] // [parse trace chart code]
---- parseCategories[parser]
---- parseTrace[parser]
--- svgBody[svgGenerator] // [generate the svg]
---- svgContent[components]
---- svgLegend[components]
---- svgTraceChart[svgGenerator] // write the trace chart code
----- chartDataToString[parser]
------ categoriesStr[parser]
------ allTraceStr[parser]
------- traceStr[parser]
---- svgStyle[components]
---- svgDefs[svgGenerator]
++ generateSvgFromCode[svgGenerator] // architecture to generate the svg
+++ stringToChartData[parser] // [parse trace chart code]
++++ parseCategories[parser]
++++ parseTrace[parser]
+++ svgBody[svgGenerator] // [generate the svg]
++++ svgContent[components]
++++ svgLegend[components]
++++ svgTraceChart[svgGenerator] // write the trace chart code
+++++ chartDataToString[parser]
++++++ categoriesStr[parser]
++++++ allTraceStr[parser]
+++++++ traceStr[parser]
++++ svgStyle[components]
++++ svgDefs[svgGenerator]
 ```
 
 It will generates

@@ -2,26 +2,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="970" height="720" viewBox="0 0 970 720">
     <!-- trace-chart: Generated from Trace-Chart (http://localhost:5173/) [0.1.0]
 categories:
-- svgGenerator: {#FF6F00}
-- parser: {#006FFF}
-- components: {#388E3C}
++ svgGenerator: {#FF6F00}
++ parser: {#006FFF}
++ components: {#388E3C}
 traces:
-- generateSvgFromCode[svgGenerator]//  architecture to generate the svg
--- stringToChartData[parser]// [parse trace chart code] 
---- parseCategories[parser]
---- parseTrace[parser]
--- svgBody[svgGenerator]// [generate the svg] 
---- svgContent[components]
---- svgLegend[components]
---- svgTraceChart[svgGenerator]//  write the trace chart code
----- chartDataToString[parser]
------ categoriesStr[parser]
------ allTraceStr[parser]
------- traceStr[parser]
---- svgStyle[components]
---- svgDefs[svgGenerator]
++ generateSvgFromCode[svgGenerator]//  architecture to generate the svg
+++ stringToChartData[parser]// [parse trace chart code]
++++ parseCategories[parser]
++++ parseTrace[parser]
+++ svgBody[svgGenerator]// [generate the svg]
++++ svgContent[components]
++++ svgLegend[components]
++++ svgTraceChart[svgGenerator]//  write the trace chart code
+++++ chartDataToString[parser]
++++++ categoriesStr[parser]
++++++ allTraceStr[parser]
+++++++ traceStr[parser]
++++ svgStyle[components]
++++ svgDefs[svgGenerator]
 -->
-    
+
     <style>
         svg { background: #FFFFFF; }
 
@@ -162,30 +162,30 @@ traces:
         }
 
     </style>
-    
-    
+
+
     <g class="legend" transform="translate(690, 20)">
         <rect x="-20" y="-20" width="280" height="100" class="legend-box" />
 
-        
+
         <g class="svgGenerator" transform="translate(0, 0)">
             <line x1="0" y1="0" x2="30" y2="0" />
             <text x="40" y="0" class="label-legend">svgGenerator</text>
         </g>
-        
+
         <g class="parser" transform="translate(0, 20)">
             <line x1="0" y1="0" x2="30" y2="0" />
             <text x="40" y="0" class="label-legend">parser</text>
         </g>
-        
+
         <g class="components" transform="translate(0, 40)">
             <line x1="0" y1="0" x2="30" y2="0" />
             <text x="40" y="0" class="label-legend">components</text>
         </g>
-        
+
     </g>
-    
-    
+
+
     <defs>
         <marker id="arrowhead" markerWidth="5" markerHeight="7" refX="4" refY="1.75" orient="auto">
             <polygon points="0,0 5,1.75 0,3.5" fill="context-stroke" />
@@ -203,8 +203,8 @@ traces:
             <line x1="0" y1="0" x2="0" y2="4" class="marker" />
         </marker>
     </defs>
-    
-    
+
+
     <g class="state-timeline" transform="translate(210, 30)">
         <line x1="0" y1="0" x2="0" y2="660" class="timeline" />
         <g class="svgGenerator" transform="translate(50, 30)">
@@ -224,18 +224,18 @@ traces:
     <line x1="0" y1="90" x2="-50" y2="90" class="stop-method" />
 
     <g class="call parser" transform="translate(50, 30)">
-        
+
         <text x="10" y="0" class="label-call">parseCategories</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 
     <g class="call parser" transform="translate(50, 60)">
-        
+
         <text x="10" y="0" class="label-call">parseTrace</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 </g>
 <g class="svgGenerator" transform="translate(50, 150)">
 <line x1="-120" y1="0" x2="-50" y2="0" class="link-info" />
@@ -247,18 +247,18 @@ traces:
     <line x1="0" y1="390" x2="-50" y2="390" class="stop-method" />
 
     <g class="call components" transform="translate(50, 30)">
-        
+
         <text x="10" y="0" class="label-call">svgContent</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 
     <g class="call components" transform="translate(50, 60)">
-        
+
         <text x="10" y="0" class="label-call">svgLegend</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 <g class="svgGenerator" transform="translate(50, 90)">
 <line x1="-170" y1="0" x2="-50" y2="0" class="link-info" />
 <text x="-245" y="0" class="details-info">write the trace chart code</text>
@@ -274,11 +274,11 @@ traces:
     <line x1="0" y1="150" x2="-50" y2="150" class="stop-method" />
 
     <g class="call parser" transform="translate(50, 30)">
-        
+
         <text x="10" y="0" class="label-call">categoriesStr</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 <g class="parser" transform="translate(50, 60)">
 
     <text x="10" y="0" class="label-method">allTraceStr</text>
@@ -287,30 +287,30 @@ traces:
     <line x1="0" y1="60" x2="-50" y2="60" class="stop-method" />
 
     <g class="call parser" transform="translate(50, 30)">
-        
+
         <text x="10" y="0" class="label-call">traceStr</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 </g>
 </g>
 </g>
 
     <g class="call components" transform="translate(50, 330)">
-        
+
         <text x="10" y="0" class="label-call">svgStyle</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 
     <g class="call svgGenerator" transform="translate(50, 360)">
-        
+
         <text x="10" y="0" class="label-call">svgDefs</text>
         <line x1="-50" y1="0" x2="0" y2="0" class="call-method" />
     </g>
-    
+
 </g>
 </g>
     </g>
-    
+
 </svg>

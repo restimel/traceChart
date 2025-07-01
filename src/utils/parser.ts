@@ -3,26 +3,26 @@ import type { Categories, Category, ChartData, Trace } from '@/types';
 
 /*
  * categories:
- * - <id>: <label> {<color>}
- * - <id>: {<color>}
+ * + <id>: <label> {<color>}
+ * + <id>: {<color>}
  *
  * trace:
- * - <name> [<category>] // [<event>] <comment>
- * - <name> [<category>] // [<event>]
- * - <name> [<category>] // <comment>
- * - <name> [<category>]
- * - <name> // [<event>] <comment>
- * - <name> // [<event>]
- * - <name> // <comment>
- * - <name>
- * -- <childName> [<category>]
- * --- <subChildName> [<category>]
+ * + <name> [<category>] // [<event>] <comment>
+ * + <name> [<category>] // [<event>]
+ * + <name> [<category>] // <comment>
+ * + <name> [<category>]
+ * + <name> // [<event>] <comment>
+ * + <name> // [<event>]
+ * + <name> // <comment>
+ * + <name>
+ * ++ <childName> [<category>]
+ * +++ <subChildName> [<category>]
  */
 
 /* {{{ helpers */
 
 function indent(nb = 1): string {
-    return new Array(nb).fill('-').join('');
+    return new Array(nb).fill('+').join('');
 }
 
 function escapeLabel(text: string): string {
@@ -53,7 +53,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         trace: [],
     };
 
-    const sectionRgx = /(?:^|\n)(?<sectionName>\w+:)(?<content>(?:\n-[^\n]+|\n+(?=\n))+)/g;
+    const sectionRgx = /(?:^|\n)(?<sectionName>\w+:)(?<content>(?:\n\+[^\n]+|\n+(?=\n))+)/g;
     let noSection = true;
     const additionalCategories: string[] = [];
 
@@ -166,7 +166,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
 function parseCategories(code: string): Map<string, Category> {
     const categories = new Map<string, Category>();
 
-    const categoryRgx = /^\s*-\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
+    const categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
 
     for (const result of code.matchAll(categoryRgx)) {
         const categoryId = unescapeLabel(result.groups?.categoryId?.trim());
@@ -193,10 +193,10 @@ function parseTrace(code: string): {categoryUsed: string[], trace: Trace[]} {
     const categories = new Set<string>();
     const stack: Trace[] = [];
 
-    const traceRgx = /^\s*(?<indentation>-+)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
+    const traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
 
     for (const result of code.matchAll(traceRgx)) {
-        const indentation = result.groups?.indentation ?? '-';
+        const indentation = result.groups?.indentation ?? '+';
         const name = unescapeLabel(result.groups?.name?.trim());
         const category = unescapeLabel(result.groups?.category?.trim());
         const event = unescapeLabel(result.groups?.event?.trim());
@@ -217,7 +217,7 @@ function parseTrace(code: string): {categoryUsed: string[], trace: Trace[]} {
         }
 
         if (indentLevel > stack.length) {
-            throw new Error(`A line seems to be the grand-child of the precedent line. Please verify the number of "-".\n "${result[0]}"`);
+            throw new Error(`A line seems to be the grand-child of the precedent line. Please verify the number of "+".\n "${result[0]}"`);
         }
 
         if (indentLevel < stack.length) {
