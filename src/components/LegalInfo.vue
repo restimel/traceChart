@@ -13,13 +13,8 @@
         </section>
 
         <section>
-            <h3>Contact</h3>
-            <p></p>
-        </section>
-
-        <section>
             <h3>Report bugs</h3>
-            <p></p>
+            <p><a href="https://github.com/restimel/traceChart/issues" target="_blank">Report issues on Github</a></p>
         </section>
     </div>
 </template>
