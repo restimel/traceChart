@@ -16,7 +16,7 @@ It's particularly useful for visualizing call traces, performance timings, or an
 
 Below is an example of a trace definition and the structure it represents:
 
-```yaml
+```
 categories:
 + svgGenerator: {#FF6F00}
 + parser: {#006FFF}
@@ -44,6 +44,32 @@ It will generates
 ![Generated SVG](./docs/svgGenerator.svg?sanitize=true)
 
 Note: The generated SVG contains embedded metadata. Opening it again with `traceChart` allows you to re-edit the original trace definition.
+
+### Trace syntax
+
+A trace line syntax is:
+```
+<level> <name> [<category>] // [<Action>] <comment>
+```
+* `<level>` (**mandatory**): indicate the level of this trace event.
+This is 1 `+` for level 1, for a child of the previous trace add another `+` (so `++` for level 2).
+* `<name>`  (**optional** but highly recommended): the name of the trace event.
+Special characters (such as `[]/\`) can be escaped with `\`.
+* `<category>` (**optional**): indicate in which category the trace event is linked to.
+It will use the defined color for this category.
+If missing, it will use the same category as the parent trace event.
+* `<Action>` (**optional**): Add an important comment for this trace event.
+* `<comment>` (**optional**): Add a small comment for this trace event.
+
+### Category syntax
+
+A category line syntax is:
+```
++ <category>: <label> {<color>}
+```
+* `<category>` (**mandatory**): The category name used in the trace section.
+* `<label>` (**optional**): The label to display in the legend section.
+* `<color>` (**optional**): The color to use for these trace events.
 
 ## Installation (for contribution)
 
