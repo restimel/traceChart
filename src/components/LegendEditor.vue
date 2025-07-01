@@ -24,7 +24,7 @@
                         <input
                             type="text"
                             :value="legend.key"
-                            @input="changeKey(legend.key, $event.target.value)"
+                            @input="changeKey(legend.key, ($event.target as HTMLInputElement).value ?? '')"
                             :key="`${identifiers.get(legend.key) ?? legend.key}-key`"
                         />
                     </td>
@@ -32,7 +32,7 @@
                         <input
                             type="text"
                             :value="legend.label || legend.key"
-                            @input="changeLabel(legend.key, $event.target.value)"
+                            @input="changeLabel(legend.key, ($event.target as HTMLInputElement).value ?? '')"
                             :key="`${identifiers.get(legend.key) ?? legend.key}-label`"
                         />
                     </td>
@@ -40,7 +40,7 @@
                         <input
                             type="color"
                             :value="legend.color"
-                            @input="changeColor(legend.key, $event.target.value)"
+                            @input="changeColor(legend.key, ($event.target as HTMLInputElement).value ?? '')"
                             :key="`${identifiers.get(legend.key) ?? legend.key}-color`"
                         />
                     </td>
@@ -112,7 +112,7 @@ interface Props {
 }
 
 interface Emits {
-    (e: 'update:code', value: string): void;
+    (e: 'update:code', value: Categories): void;
 };
 
 /* TODO: allow to change order */
@@ -166,7 +166,8 @@ const changeKey = (key: string, newKeyValue: string) => {
     localLegend.value.delete(key);
     localLegend.value.set(newKeyValue, info);
 
-    identifiers.set(newKeyValue, identifiers.get(key));
+    const keyId = identifiers.get(key) ?? newKeyValue;
+    identifiers.set(newKeyValue, keyId);
     identifiers.delete(key);
 
     onCodeChange();
@@ -178,7 +179,6 @@ const remove = (key: string) => {
 };
 
 const addNew = () => {
-    console.log(identifiers.size, getColor(identifiers.size));
     const legend: Category = {
         key: '',
         label: '',

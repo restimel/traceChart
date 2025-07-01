@@ -27,7 +27,7 @@ export const readFileAsText = (file: File): Promise<string> => {
 };
 
 
-export async function processFile(file: File) {
+export async function processFile(file: File): Promise<string | undefined> {
     clearError('uploadFile');
 
     if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
@@ -41,4 +41,6 @@ export async function processFile(file: File) {
     } else {
         setError('Wrong kind of file. We expect a trace-chart SVG file', 'uploadFile');
     }
+
+    return;
 }

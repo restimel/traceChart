@@ -1,4 +1,5 @@
 import pluginVue from 'eslint-plugin-vue';
+import type { TSESLint } from '@typescript-eslint/utils';
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
 // import pluginVitest from '@vitest/eslint-plugin';
 
@@ -8,6 +9,13 @@ import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescri
  * configureVueProject({ scriptLangs: ['ts', 'tsx'] })
  * More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
  */
+
+/*
+ * XXX: recasting to TSESLint.FlatConfig.Config is necessary because
+ * Linter.Config support newer version of Ecmascript so types are
+ * considered as different by TS
+ */
+const pluginVueEssential = pluginVue.configs['flat/essential'] as TSESLint.FlatConfig.Config[];
 
 export default defineConfigWithVueTs(
     {
@@ -20,7 +28,7 @@ export default defineConfigWithVueTs(
         ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
     },
 
-    pluginVue.configs['flat/essential'],
+    pluginVueEssential,
     vueTsConfigs.recommended,
 
     {

@@ -68,7 +68,10 @@ async function handleFileSelect(event: Event) {
 
     if (file) {
         const content = await processFile(file);
-        emit('file-loaded', content);
+
+        if (content) {
+            emit('file-loaded', content);
+        }
     }
 }
 

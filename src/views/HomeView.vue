@@ -37,19 +37,19 @@ import SvgViewer from '@/components/SvgViewer.vue';
 import { setError } from '@/store/Store';
 import { processFile } from '@/utils/fileUtils';
 import { chartDataToString, extractCode, stringToChartData } from '@/utils/parser';
-import { generateSvgFromCode } from '@/utils/svgGenerator';
+import { generateSvgFromCode, type SvgInfo } from '@/utils/svgGenerator';
 import type { Categories } from '@/types';
 
 const code = ref('');
 const legend = ref<Categories>(new Map());
 const dragging = ref(false);
 
-const svgParsing = computed(() => {
+const svgParsing = computed<SvgInfo | Partial<SvgInfo>>(() => {
     if (!code.value) {
         return {};
     }
 
-    return code.value && generateSvgFromCode(code.value, legend.value);
+    return code.value && generateSvgFromCode(code.value, legend.value) || {};
 });
 
 watch(svgParsing, () => {

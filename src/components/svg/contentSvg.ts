@@ -84,8 +84,9 @@ function addFunction(task: Trace, idx: number, indent: number): TraceContent {
     let currentIdx = 1;
     let maxIndentation = indent;
     const childIndent = indent + 1;
+    const subTasks = task.subTasks ?? [];
 
-    const children = task.subTasks.map((task) => {
+    const children = subTasks.map((task) => {
         const child = addTask(task, currentIdx, childIndent);
 
         currentIdx = child.idx;

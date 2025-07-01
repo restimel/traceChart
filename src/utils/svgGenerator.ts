@@ -6,7 +6,7 @@ import type { Categories, ChartData } from '@/types';
 import { chartDataToString, stringToChartData } from './parser';
 import { clearError, setError } from '@/store/Store';
 
-type SvgInfo = {
+export type SvgInfo = {
     svg: string;
     chartData: ChartData | null;
 }
