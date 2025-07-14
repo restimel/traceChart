@@ -110,7 +110,7 @@ const handleDrop = async (event: DragEvent) => {
 
 <style scoped>
 .home {
-    padding: 20px;
+    padding: var(--padding);
     height: 100%;
 }
 

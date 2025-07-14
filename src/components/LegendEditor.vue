@@ -225,9 +225,9 @@ watch(() => props.categories, (newValue) => {
 }
 
 .legend-table {
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    padding: var(--small-padding);
+    border-radius: var(--border-radius);
     width: 100%;
 }
 </style>

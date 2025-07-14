@@ -17,14 +17,14 @@ import { clearError, error } from '@/store/Store';
     border: 2px solid var(--color-error);
     background: color(from var(--color-error) srgb r g b / 0.15);
     color: var(--color-error);
-    border-radius: 5px;
+    border-radius: var(--border-radius);
 
     position: fixed;
     z-index: 1000;
     top: 10px;
     left: 50%;
     transform: translate(-50%, 0);
-    padding: 10px;
+    padding: var(--small-padding);
 
     cursor: pointer;
 

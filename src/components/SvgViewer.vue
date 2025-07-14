@@ -95,11 +95,11 @@ async function handleFileSelect(event: Event) {
 }
 
 .svg-container {
-    border: 1px solid #ccc;
-    padding: 20px;
+    border: 1px solid var(--color-border);
+    padding: var(--padding);
     min-height: 200px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius);
 }
 
 .actions {

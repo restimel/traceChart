@@ -45,6 +45,10 @@
     --color-error: #f46464;
 
     --section-gap: 160px;
+    --small-padding: 0.5rem;
+    --padding: 1rem;
+    --border-radius: 5px;
+    --border-radius-round: 100%;
 }
 
 @media (prefers-color-scheme: dark) {

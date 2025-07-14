@@ -22,7 +22,7 @@ import ErrorNotification from '@/components/ErrorNotification.vue';
 
 nav {
     background-color: #f8f9fa;
-    padding: 1rem;
+    padding: var(--padding);
     display: flex;
     gap: 1rem;
 }
@@ -30,8 +30,8 @@ nav {
 nav a {
     text-decoration: none;
     color: #007bff;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: var(--small-padding) var(--padding);
+    border-radius: var(--border-radius);
 }
 
 nav a:hover,

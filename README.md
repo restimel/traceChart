@@ -76,17 +76,22 @@ A category line syntax is:
 Clone the repository:
 
 ```shell
+# get the project
 git clone https://github.com/restimel/traceChart.git
 cd traceChart
+
+# retrieve dependencies
 npm ci
+
+# run the application
 npm run dev
 ```
 
 Open your browser to the given URL.
 
-##License
+## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for more details.
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for more details.
 
 ## Author
 
