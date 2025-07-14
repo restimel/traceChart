@@ -7,24 +7,35 @@
         <button class="close-btn" @click="close">
             ×
         </button>
-        <code><pre>
-            {{ content }}
-        </pre></code>
+        <VueMarkdownRender
+            :source="content"
+            :options="options"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
+import VueMarkdownRender from 'vue-markdown-render';
 
 const emit = defineEmits<{
     close: []
 }>();
+
+const options = {
+    html: false,
+    xhtmlOut: false,
+    breaks: true,
+    linkify: false,
+    typographer: true,
+    quotes: '“”‘’', /* ['«\xA0', '\xA0»', '‹\xA0', '\xA0›'] for french */
+};
 
 const content = `
 ## Trace syntax
 
 A trace line syntax is:
 \`\`\`
-<level> <name> [<category>] // [<Action>] <comment>
+<level> <name> [<category>] // [<action>] <comment>
 \`\`\`
 * \`<level>\` (**mandatory**): indicate the level of this trace event.
 This is 1 \`+\` for level 1, for a child of the previous trace add another \`+\` (so \`++\` for level 2).
@@ -33,10 +44,10 @@ Special characters (such as \`[]/\\\`) can be escaped with \`\\\`.
 * \`<category>\` (**optional**): indicate in which category the trace event is linked to.
 It will use the defined color for this category.
 If missing, it will use the same category as the parent trace event.
-* \`<Action>\` (**optional**): Add an important comment for this trace event.
+* \`<action>\` (**optional**): Add an important comment for this trace event.
 * \`<comment>\` (**optional**): Add a small comment for this trace event.
 
-## Example
+### Example
 
 \`\`\`
 traces:
@@ -82,6 +93,22 @@ function close() {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     background: var(--color-background-mute);
+
+    max-height: 95vh;
+    max-width: 95vw;
+    overflow: auto;
+
+    box-shadow: 0 0 200px 0 #99999999;
+}
+
+.modal :deep(code) {
+    font-size: 0.9em;
+    color: #77431d;
+}
+
+.modal :deep(pre) {
+    background: var(--color-background-code);
+    padding: var(--small-padding);
 }
 
 .close-btn {

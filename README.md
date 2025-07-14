@@ -49,7 +49,7 @@ Note: The generated SVG contains embedded metadata. Opening it again with `trace
 
 A trace line syntax is:
 ```
-<level> <name> [<category>] // [<Action>] <comment>
+<level> <name> [<category>] // [<action>] <comment>
 ```
 * `<level>` (**mandatory**): indicate the level of this trace event.
 This is 1 `+` for level 1, for a child of the previous trace add another `+` (so `++` for level 2).
@@ -58,7 +58,7 @@ Special characters (such as `[]/\`) can be escaped with `\`.
 * `<category>` (**optional**): indicate in which category the trace event is linked to.
 It will use the defined color for this category.
 If missing, it will use the same category as the parent trace event.
-* `<Action>` (**optional**): Add an important comment for this trace event.
+* `<action>` (**optional**): Add an important comment for this trace event.
 * `<comment>` (**optional**): Add a small comment for this trace event.
 
 ### Category syntax
