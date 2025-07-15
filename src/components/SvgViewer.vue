@@ -28,7 +28,15 @@
                 </button>
             </span>
         </div>
-        <div class="svg-container" v-html="svgContent"></div>
+        <div
+            class="svg-container"
+            :class="{
+                fullscreen: svgFullscreen,
+                empty: !svgContent,
+            }"
+            v-html="svgContent"
+            @click="svgFullscreen = !svgFullscreen"
+        ></div>
     </div>
 </template>
 
@@ -51,6 +59,7 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 const fileInput = ref<HTMLInputElement>();
+const svgFullscreen = ref<boolean>(false);
 
 function downloadSvg() {
     if (props.svgContent) {
@@ -100,10 +109,25 @@ async function handleFileSelect(event: Event) {
     min-height: 200px;
     background-color: var(--color-background);
     border-radius: var(--border-radius);
+    cursor: zoom-in;
+}
+
+.svg-container.fullscreen:not(.empty) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    min-height: 100vh;
+    cursor: zoom-out;
+}
+
+.svg-container.empty {
+    cursor: default;
 }
 
 .actions {
     display: flex;
     gap: 10px;
 }
+
 </style>
