@@ -261,7 +261,10 @@ export function chartDataToString(chart: ChartData, onlyCode = false): string {
 
     contents.push(allTraceStr(chart));
 
-    return contents.join('\n');
+    /* Trim all lines */
+    const contentStr = contents.join('\n').replace(/ +\n/g, '\n');
+
+    return contentStr;
 }
 
 function categoriesStr(chart: ChartData): string {
@@ -289,9 +292,9 @@ function allTraceStr(chart: ChartData): string {
 function traceStr(trace: Trace, indentLevel: number): string {
     const indentation = indent(indentLevel);
     const { name, category, event, comment, subTasks } = trace;
-    const categoryStr = category ? `[${escapeLabel(category)}]` : '';
+    const categoryStr = category ? ` [${escapeLabel(category)}]` : '';
     const eventStr =  event ? `[${escapeLabel(event)}]` : '';
-    const commentStr =  eventStr || comment ? `// ${eventStr} ${escapeLabel(comment ?? '')}` : '';
+    const commentStr =  eventStr || comment ? ` // ${eventStr} ${escapeLabel(comment ?? '')}` : '';
 
     const content = [`${indentation} ${escapeLabel(name)}${categoryStr}${commentStr}`];
 
@@ -303,6 +306,7 @@ function traceStr(trace: Trace, indentLevel: number): string {
 
     return content.join('\n');
 }
+
 /* }}} */
 /* {{{ extract code from SVg */
 
