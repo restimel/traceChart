@@ -1,3 +1,4 @@
+import type { Categories } from '@/types';
 import { ref } from 'vue';
 
 type ErrorOrigin = 'uploadFile' | 'code' | 'legend';
@@ -8,6 +9,8 @@ type AppError = {
 } | null;
 
 export const error = ref<AppError>(null);
+export const code = ref<string>('');
+export const legend = ref<Categories>(new Map());
 
 export function setError(message: string, origin?: ErrorOrigin) {
     error.value = {
