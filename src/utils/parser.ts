@@ -26,7 +26,7 @@ function indent(nb = 1): string {
 }
 
 function escapeLabel(text: string): string {
-    return text.replace(/[\\{}[\]\/:<>]/g, '\\$0');
+    return text.replace(/[\\{}[\]\/:<>]/g, '\\$&');
 }
 
 function unescapeLabel(text?: string): string {
