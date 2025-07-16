@@ -10,10 +10,10 @@ import type { Box, ChartData, Content } from '@/types';
 
 export function svgLegend(data: ChartData, contentBox: Box): Content {
     const maxX = LEGEND_LINE_SIZE + TEXT_MARGIN + LEGEND_ITEM_MAX_SIZE + 2 * LEGEND_MARGIN;
-    const maxY = LEGEND_ITEM_HEIGHT * data.categories.size + 2 * LEGEND_MARGIN;
+    const maxY = LEGEND_ITEM_HEIGHT * data.categories.size + LEGEND_MARGIN;
 
     const x = contentBox[1][0] + LEGEND_MARGIN;
-    const y = contentBox[0][1] + LEGEND_MARGIN; // TODO center
+    const y = contentBox[0][1] + LEGEND_MARGIN;
 
     const categoryList = Array.from(data.categories.values()).sort((a, b) => a.order - b.order);
     const legendList = categoryList.map(({label, key}, idx) => {
