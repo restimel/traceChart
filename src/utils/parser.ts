@@ -1,5 +1,6 @@
 import { getColor } from '@/utils/chart';
 import type { Categories, Category, ChartData, Trace } from '@/types';
+import { setCodeError } from '@/store/Store';
 
 /*
  * categories:
@@ -58,8 +59,13 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     const additionalCategories: string[] = [];
 
     for (const result of trimmedText.matchAll(sectionRgx)) {
+        if (!result.groups) {
+            continue;
+        }
+
         noSection = false;
-        switch (result.groups?.sectionName.toLowerCase()) {
+        const sectionName = result.groups.sectionName;
+        switch (sectionName?.toLowerCase()) {
             case 'categories:':
             case 'categorie:':
             case 'category:': {
@@ -68,21 +74,22 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
                 break;
             }
             case 'traces:':
-            case 'trace:':
-                const traceAnalyzed = parseTrace(result.groups.content);
+            case 'trace:': {
+                const offset = text.indexOf(sectionName, result.index) + sectionName.length;
+                const traceAnalyzed = parseTrace(result.groups.content, offset);
 
                 drawChart.trace = traceAnalyzed.trace;
                 additionalCategories.push(...traceAnalyzed.categoryUsed);
 
                 break;
+            }
             default:
-                /* eslint-disable-next-line no-console */
-                console.warn('Parsing issue: Section "%s" detected but this section is unknown', result.groups?.sectionName);
+                setCodeError(sectionName, text, 'Unknown section', 'warning');
         }
     }
 
     if (noSection) {
-        const traceAnalyzed = parseTrace(trimmedText);
+        const traceAnalyzed = parseTrace(trimmedText, 0);
 
         drawChart.trace = traceAnalyzed.trace;
         additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -188,7 +195,7 @@ function parseCategories(code: string): Map<string, Category> {
     return categories;
 }
 
-function parseTrace(code: string): {categoryUsed: string[], trace: Trace[]} {
+function parseTrace(code: string, offset: number): {categoryUsed: string[], trace: Trace[]} {
     const traces: Trace[] = [];
     const categories = new Set<string>();
     const stack: Trace[] = [];
@@ -217,6 +224,7 @@ function parseTrace(code: string): {categoryUsed: string[], trace: Trace[]} {
         }
 
         if (indentLevel > stack.length) {
+            setCodeError(indentation, code, 'The line seems to be the grand-child of the precedent line. Please verify the number of "+".', 'error', { section: result[0], offset, contextIndex: result.index });
             throw new Error(`A line seems to be the grand-child of the precedent line. Please verify the number of "+".\n "${result[0]}"`);
         }
 

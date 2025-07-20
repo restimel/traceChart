@@ -4,7 +4,7 @@ import { svgStyle } from '@/components/svg/styleSVG';
 
 import type { Categories, ChartData } from '@/types';
 import { chartDataToString, stringToChartData } from './parser';
-import { clearError, setError } from '@/store/Store';
+import { clearError, resetCodeErrors, setError } from '@/store/Store';
 
 export type SvgInfo = {
     svg: string;
@@ -13,6 +13,7 @@ export type SvgInfo = {
 
 export const generateSvgFromCode = (code: string, categories?: Categories): SvgInfo => {
     clearError('code');
+    resetCodeErrors();
 
     try {
         const data = stringToChartData(code, categories);

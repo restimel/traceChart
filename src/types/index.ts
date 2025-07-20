@@ -1,3 +1,5 @@
+import type { Diagnostic } from '@codemirror/lint';
+
 export type Color = string;
 
 export type SvgData = {
@@ -47,3 +49,21 @@ export type Content = {
     content: string;
     dimension: Box;
 };
+
+type BaseCodeError = {
+    severity?: Diagnostic['severity'];
+    message: string;
+};
+
+export type LineCodeError = BaseCodeError & {
+    line: number;
+    from?: number;
+    to?: number;
+};
+
+export type ChunkCodeError = BaseCodeError & {
+    fromChar: number;
+    toChar: number;
+};
+
+export type CodeError = LineCodeError | ChunkCodeError;
