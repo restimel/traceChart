@@ -54,12 +54,12 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         trace: [],
     };
 
-    const sectionRgx = /(?:^|\n)(?<sectionName>\w+:)(?<content>(?:\n\+[^\n]+|\n+(?=\n))+)/g;
+    const sectionRgx = /(?:^|\n)\s*(?<sectionName>\w+:)(?<content>(?:\n\+[^\n]+|\n(?!\s*\w+:)[^\n]*)+)/g;
     let noSection = true;
     const additionalCategories: string[] = [];
 
     for (const result of trimmedText.matchAll(sectionRgx)) {
-        if (!result.groups) {
+        if (!result?.groups) {
             continue;
         }
 
@@ -75,6 +75,11 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
             }
             case 'traces:':
             case 'trace:': {
+                if (drawChart.trace.length) {
+                    setCodeError(result[0].trim(), text, 'Duplicated traces. This part will be ignored', 'error');
+                    break;
+                }
+
                 const offset = text.indexOf(sectionName, result.index) + sectionName.length;
                 const traceAnalyzed = parseTrace(result.groups.content, offset);
 
@@ -202,7 +207,22 @@ function parseTrace(code: string, offset: number): {categoryUsed: string[], trac
 
     const traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
 
+    let lastPosition = 0;
+
+    function ignoredPattern(end: number) {
+        if (lastPosition !== end) {
+            const section = code.slice(lastPosition, end).trim();
+
+            if (section !== '') {
+                setCodeError(section, code, 'This part is ignored', 'info', { offset, index: lastPosition });
+            }
+        }
+    }
+
     for (const result of code.matchAll(traceRgx)) {
+        ignoredPattern(result.index);
+        lastPosition = result.index + result[0].length;
+
         const indentation = result.groups?.indentation ?? '+';
         const name = unescapeLabel(result.groups?.name?.trim());
         const category = unescapeLabel(result.groups?.category?.trim());
@@ -250,6 +270,8 @@ function parseTrace(code: string, offset: number): {categoryUsed: string[], trac
             }
         }
     }
+
+    ignoredPattern(code.length);
 
     return {
         trace: traces,
