@@ -45,11 +45,17 @@
                         />
                     </td>
                     <td>
-                        <button v-if="legend.explicit && !legend.used"
+                        <button v-if="canRemove(legend)"
                             @click="remove(legend.key)"
                         >
                             ✖
                         </button>
+                        <span v-else-if="!legend.used"
+                            class="not-used"
+                            title="This category is currently not used. Remove it from the code if you don't want it anymore."
+                        >
+                            ?
+                        </span>
                     </td>
                 </tr>
 
@@ -120,7 +126,7 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
-const localLegend = ref(new Map());
+const localLegend = ref<Categories>(new Map());
 const newLegend = ref<Category | null>(null);
 
 const identifiers = new Map<string, string>();
@@ -148,21 +154,23 @@ const onCodeChange = () => {
 };
 
 const changeColor = (key: string, color: string) => {
-    const info = localLegend.value.get(key);
+    const info = localLegend.value.get(key)!;
     info.color = color;
+    info.origin = 'legend';
     onCodeChange();
 };
 
 const changeLabel = (key: string, label: string) => {
-    const info = localLegend.value.get(key);
+    const info = localLegend.value.get(key)!;
     info.label = label;
+    info.origin = 'legend';
     onCodeChange();
 };
 
 const changeKey = (key: string, newKeyValue: string) => {
-    const info = localLegend.value.get(key);
+    const info = localLegend.value.get(key)!;
     info.key = newKeyValue;
-    info.explicit = true;
+    info.origin = 'legend';
     localLegend.value.delete(key);
     localLegend.value.set(newKeyValue, info);
 
@@ -183,7 +191,7 @@ const addNew = () => {
         key: '',
         label: '',
         color: getColor(identifiers.size),
-        explicit: true,
+        origin: 'legend',
         used: false,
         order: identifiers.size,
     };
@@ -217,6 +225,13 @@ watch(() => props.categories, (newValue) => {
         }
     });
 }, {immediate: true, deep: true});
+
+function canRemove(legend: Category): boolean {
+    return !legend.used && (
+        legend.origin === 'legend' ||
+        legend.origin === 'file'
+    );
+}
 </script>
 
 <style scoped>
@@ -229,5 +244,9 @@ watch(() => props.categories, (newValue) => {
     padding: var(--small-padding);
     border-radius: var(--border-radius);
     width: 100%;
+}
+
+.not-used {
+    cursor: help;
 }
 </style>

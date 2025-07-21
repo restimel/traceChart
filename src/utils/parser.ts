@@ -54,6 +54,12 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         trace: [],
     };
 
+    drawChart.categories.forEach((value, key) => {
+        if (value.origin === 'codeCategory') {
+            drawChart.categories.delete(key);
+        }
+    });
+
     const sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
     let noSection = true;
     const additionalCategories: string[] = [];
@@ -71,7 +77,15 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
             case 'categorie:':
             case 'category:': {
                 const parsedCategories = parseCategories(result.groups.content);
-                drawChart.categories = new Map([...drawChart.categories, ...parsedCategories]);
+
+                parsedCategories.forEach((category) => {
+                    const oldCategory = drawChart.categories.get(category.key);
+
+                    if (!oldCategory || oldCategory.origin !== 'legend') {
+                        drawChart.categories.set(category.key, category);
+                    }
+                });
+
                 break;
             }
             case 'traces:':
@@ -105,7 +119,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         if (additionalCategories.includes(key)) {
             info.used = true;
         } else {
-            if (!info.explicit) {
+            if (info.origin === 'codeTrace') {
                 map.delete(key);
             } else {
                 info.used = false;
@@ -123,7 +137,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
                     label: '',
                     color: getColor(categories.size),
                     order: categories.size,
-                    explicit: false,
+                    origin: 'codeTrace',
                     used: true,
                 });
 
@@ -190,7 +204,7 @@ function parseCategories(code: string): Map<string, Category> {
                 key: categoryId,
                 label: label || '',
                 color: isValidColor(color) ? color : getColor(categories.size),
-                explicit: true,
+                origin: 'codeCategory',
                 order: categories.size,
                 used: false,
             });

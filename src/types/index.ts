@@ -18,9 +18,15 @@ export type Category = {
     label: string;
     color: Color;
     order: number;
-    /* true, means that it has been explicitly added by user (or from file) */
-    explicit: boolean;
-    /* true, means that it has been explicitly used in the code */
+    /**
+     * Indicate the origin of this category
+     * - file: It comes from the loaded file
+     * - codeCategory: It comes from the code typing "category:"
+     * - codeTrace: It comes from the code parsing (it is used in traces)
+     * - legend: It has been added by user from GUI
+     */
+    origin: 'file' | 'codeCategory' | 'codeTrace' | 'legend';
+    /** true, means that it has been explicitly used in the code */
     used: boolean;
 };
 
