@@ -13,6 +13,30 @@ export const codeErrors = ref<CodeError[]>([]);
 export const code = ref<string>('');
 export const legend = ref<Categories>(new Map());
 
+function compareLegend(legend1: Categories, legend2: Categories): boolean {
+    if (legend1.size !== legend2.size) {
+        return false;
+    }
+
+    /* .every() does not exist on Map */
+    let every = true;
+    legend1.forEach((value, key) => {
+        if (legend2.get(key) !== value) {
+            every = false;
+        }
+    });
+
+    return every;
+}
+
+export function updateLegend(categories?: Categories) {
+    if (!categories || compareLegend(categories, legend.value)) {
+        return;
+    }
+
+    legend.value = categories;
+}
+
 export function setError(message: string, origin?: ErrorOrigin) {
     error.value = {
         origin,

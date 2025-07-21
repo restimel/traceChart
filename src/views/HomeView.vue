@@ -18,7 +18,7 @@
               />
               <LegendEditor
                   :categories="legend"
-                  @update:code="updateLegend"
+                  @update:code="updateLegendCode"
               />
           </div>
 
@@ -34,7 +34,7 @@ import { computed, ref, watch } from 'vue';
 import CodeEditor from '@/components/CodeEditor.vue';
 import LegendEditor from '@/components/LegendEditor.vue';
 import SvgViewer from '@/components/SvgViewer.vue';
-import { code, legend, setError } from '@/store/Store';
+import { code, legend, setError, updateLegend } from '@/store/Store';
 import { processFile } from '@/utils/fileUtils';
 import { chartDataToString, extractCode, stringToChartData } from '@/utils/parser';
 import { generateSvgFromCode, type SvgInfo } from '@/utils/svgGenerator';
@@ -43,19 +43,13 @@ import type { Categories } from '@/types';
 const dragging = ref(false);
 
 const svgParsing = computed<SvgInfo | Partial<SvgInfo>>(() => {
-    if (!code.value) {
+    const value = code.value;
+
+    if (!value) {
         return {};
     }
 
-    return code.value && generateSvgFromCode(code.value, legend.value) || {};
-});
-
-watch(svgParsing, () => {
-    const newLegend = svgParsing.value;
-
-    if (newLegend?.chartData?.categories) {
-        legend.value = newLegend.chartData.categories;
-    }
+    return generateSvgFromCode(value, legend.value);
 });
 
 const svgContent = computed(() => {
@@ -64,9 +58,14 @@ const svgContent = computed(() => {
 
 const updateCode = (newCode: string) => {
     code.value = newCode;
+
+    const newLegend = svgParsing.value;
+    const categories = newLegend?.chartData?.categories;
+
+    updateLegend(categories);
 };
 
-const updateLegend = (newLegend: Categories) => {
+const updateLegendCode = (newLegend: Categories) => {
     legend.value = newLegend;
 };
 

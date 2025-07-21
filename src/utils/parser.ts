@@ -54,7 +54,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         trace: [],
     };
 
-    const sectionRgx = /(?:^|\n)\s*(?<sectionName>\w+:)(?<content>(?:\n\+[^\n]+|\n(?!\s*\w+:)[^\n]*)+)/g;
+    const sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
     let noSection = true;
     const additionalCategories: string[] = [];
 
@@ -65,7 +65,8 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
 
         noSection = false;
         const sectionName = result.groups.sectionName;
-        switch (sectionName?.toLowerCase()) {
+        const offset = text.indexOf(sectionName, result.index) + sectionName.length + (result.index ? 1 : 0);
+        switch (sectionName?.toLowerCase().trim()) {
             case 'categories:':
             case 'categorie:':
             case 'category:': {
@@ -80,7 +81,6 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
                     break;
                 }
 
-                const offset = text.indexOf(sectionName, result.index) + sectionName.length;
                 const traceAnalyzed = parseTrace(result.groups.content, offset);
 
                 drawChart.trace = traceAnalyzed.trace;
