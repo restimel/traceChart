@@ -50,7 +50,7 @@ function isValidColor(color: string | undefined): color is string {
 export function stringToChartData(text: string, categories?: Categories): ChartData {
     const trimmedText = text.trim();
     const drawChart: ChartData = {
-        categories: categories ?? new Map(),
+        categories: new Map([...(categories ?? [])]),
         trace: [],
     };
 

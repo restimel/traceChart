@@ -4,5 +4,5 @@
 * Allow to reorder categories
 * add highlight for categories
 
-## Bugs
-* category loop again
+## Known bugs
+*
