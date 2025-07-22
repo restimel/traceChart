@@ -63,11 +63,21 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     const sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
     let noSection = true;
     const additionalCategories: string[] = [];
+    let lastPosition = 0;
 
     for (const result of trimmedText.matchAll(sectionRgx)) {
         if (!result?.groups) {
             continue;
         }
+
+        if (lastPosition !== result.index) {
+            const section = trimmedText.slice(lastPosition, result.index).trim();
+
+            if (section) {
+                setCodeError(section, text, 'This part is ignored. Maybe you should add `traces:` before.', 'info', { index: lastPosition });
+            }
+        }
+        lastPosition = result.index + result[0].length;
 
         noSection = false;
         const sectionName = result.groups.sectionName;
@@ -76,7 +86,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
             case 'categories:':
             case 'categorie:':
             case 'category:': {
-                const parsedCategories = parseCategories(result.groups.content);
+                const parsedCategories = parseCategories(result.groups.content, offset);
 
                 parsedCategories.forEach((category) => {
                     const oldCategory = drawChart.categories.get(category.key);
@@ -189,15 +199,34 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     // return data;
 }
 
-function parseCategories(code: string): Map<string, Category> {
+function parseCategories(code: string, offset: number): Map<string, Category> {
     const categories = new Map<string, Category>();
 
     const categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
 
+    let lastPosition = 0;
+
+    function ignoredPattern(end: number) {
+        if (lastPosition !== end) {
+            const section = code.slice(lastPosition, end).trim();
+
+            if (section !== '') {
+                setCodeError(section, code, 'This part is ignored', 'info', { offset, index: lastPosition });
+            }
+        }
+    }
+
     for (const result of code.matchAll(categoryRgx)) {
+        ignoredPattern(result.index);
+        lastPosition = result.index + result[0].length;
+
         const categoryId = unescapeLabel(result.groups?.categoryId?.trim());
         const label = unescapeLabel(result.groups?.label?.trim());
         const color = unescapeLabel(result.groups?.color?.trim());
+
+        if (!isValidColor(color)) {
+            setCodeError(result.groups?.color ?? '#', code, 'Wrong color format (it should be `#RRGGBB` in hexadecimal)', 'error', { offset, index: result.index });
+        }
 
         if (categoryId) {
             categories.set(categoryId, {
@@ -210,6 +239,8 @@ function parseCategories(code: string): Map<string, Category> {
             });
         }
     }
+
+    ignoredPattern(code.length);
 
     return categories;
 }
