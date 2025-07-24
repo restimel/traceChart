@@ -49,7 +49,7 @@ function svgBody(data: ChartData): string {
     const height = Math.max(contents.dimension[1][1], legends.dimension[1][1]);
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">
     ${svgTraceChart(data)}
     ${svgStyle(data)}
     ${legends.content}
