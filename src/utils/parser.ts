@@ -81,7 +81,8 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
 
         noSection = false;
         const sectionName = result.groups.sectionName;
-        const offset = text.indexOf(sectionName, result.index) + sectionName.length + (result.index ? 1 : 0);
+        const offset = text.indexOf(sectionName, result.index) + sectionName.length;
+
         switch (sectionName?.toLowerCase().trim()) {
             case 'categories:':
             case 'categorie:':
@@ -118,7 +119,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     }
 
     if (noSection) {
-        const traceAnalyzed = parseTrace(trimmedText, 0);
+        const traceAnalyzed = parseTrace(trimmedText, text.indexOf(trimmedText));
 
         drawChart.trace = traceAnalyzed.trace;
         additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -211,7 +212,7 @@ function parseCategories(code: string, offset: number): Map<string, Category> {
             const section = code.slice(lastPosition, end).trim();
 
             if (section !== '') {
-                setCodeError(section, code, 'This part is ignored', 'info', { offset, index: lastPosition });
+                setCodeError(section, code, 'This part is ignored. Expected pattern: "+ <name>: <description> {#<color>}"', 'info', { offset, index: lastPosition });
             }
         }
     }
@@ -259,7 +260,7 @@ function parseTrace(code: string, offset: number): {categoryUsed: string[], trac
             const section = code.slice(lastPosition, end).trim();
 
             if (section !== '') {
-                setCodeError(section, code, 'This part is ignored', 'info', { offset, index: lastPosition });
+                setCodeError(section, code, 'This part is ignored. . Expected pattern: "+ <name> [<category>] // [<action>] <comment>"', 'info', { offset, index: lastPosition });
             }
         }
     }
