@@ -117,8 +117,9 @@ async function handleFileSelect(event: Event) {
     top: 0;
     left: 0;
     width: 100vw;
-    min-height: 100vh;
+    max-height: 100vh;
     cursor: zoom-out;
+    overflow: auto;
 }
 
 .svg-container.empty {
