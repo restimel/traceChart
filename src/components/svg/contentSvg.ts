@@ -63,11 +63,15 @@ function addCall(task: Trace, idx: number, indent: number): TraceContent {
     const x = LEVEL_SIZE;
     const y = idx * EVENT_HEIGHT;
 
+    const arrowTask = task.name ? `
+        <text x="${TEXT_MARGIN}" y="0" class="label-call">${htmlSafe(task.name)}</text>
+        <line x1="-${x}" y1="0" x2="0" y2="0" class="call-method" />
+    ` : '';
+
     const content = `
     <g class="call ${toClassName(task.category)}" transform="translate(${x}, ${y})">
         ${addComment(task, indent)}
-        <text x="${TEXT_MARGIN}" y="0" class="label-call">${htmlSafe(task.name)}</text>
-        <line x1="-${x}" y1="0" x2="0" y2="0" class="call-method" />
+        ${arrowTask}
     </g>
     `;
 
