@@ -1,13 +1,13 @@
-import { getColor } from '@/utils/chart';
-import type { Categories, Category, ChartData, Trace } from '@/types';
-import { setCodeError } from '@/store/Store';
+import { getColor } from './chart';
+import type { Categories, Category, ChartData, Trace } from '../types';
+import { setCodeError } from '../store/Store';
 
 /*
  * categories:
  * + <id>: <label> {<color>}
  * + <id>: {<color>}
  *
- * trace:
+ * traces:
  * + <name> [<category>] // [<event>] <comment>
  * + <name> [<category>] // [<event>]
  * + <name> [<category>] // <comment>
@@ -54,11 +54,25 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         trace: [],
     };
 
+    const orderRemoved: number[] = [];
     drawChart.categories.forEach((value, key) => {
         if (value.origin === 'codeCategory') {
+            orderRemoved.push(value.order);
             drawChart.categories.delete(key);
         }
     });
+    if (orderRemoved.length) {
+        drawChart.categories.forEach((value) => {
+            const currentOrder = value.order;
+            const offset = orderRemoved.reduce((offset, oldOrder) => {
+                if (oldOrder < currentOrder) {
+                    return offset + 1;
+                }
+                return offset;
+            }, 0);
+            value.order = value.order - offset;
+        });
+    }
 
     const sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
     let noSection = true;
