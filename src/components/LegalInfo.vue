@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-const version = __APP_VERSION__;
+import { version } from '@/utils/appTools';
 </script>
 
 <style scoped>

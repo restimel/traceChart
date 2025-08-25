@@ -4,6 +4,7 @@ import { svgStyle } from '@/components/svg/styleSVG';
 
 import type { Categories, ChartData } from '@/types';
 import { chartDataToString, stringToChartData } from './parser';
+import { version } from './appTools';
 import { clearError, resetCodeErrors, setError } from '@/store/Store';
 
 export type SvgInfo = {
@@ -16,7 +17,7 @@ export const generateSvgFromCode = (code: string, categories?: Categories): SvgI
     resetCodeErrors();
 
     try {
-        const data = stringToChartData(code, categories);
+        const data = stringToChartData(code, { categories });
         const svg = svgBody(data);
 
         return {
@@ -86,7 +87,7 @@ function svgTraceChart(chart: ChartData): string {
     const link = document.location.href;
 
     const svg = [
-        `<!-- trace-chart: Generated from Trace-Chart (${link}) [${ __APP_VERSION__ }]`,
+        `<!-- trace-chart: Generated from Trace-Chart (${link}) [${ version }]`,
         code,
         '-->',
     ];

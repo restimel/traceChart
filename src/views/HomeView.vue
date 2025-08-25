@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import CodeEditor from '@/components/CodeEditor.vue';
 import LegendEditor from '@/components/LegendEditor.vue';
 import SvgViewer from '@/components/SvgViewer.vue';
@@ -77,12 +77,19 @@ const loadSvgFile = (content: string) => {
 
     const newCode = extractCode(content);
 
-    if (!newCode) {
+    if (!newCode.code) {
         setError('No "trace-chart" code have been detected in this file.', 'uploadFile');
         return;
     }
 
-    const chartData = stringToChartData(newCode);
+    if (newCode.warning.length) {
+        /* TODO: define this as warning */
+        newCode.warning.forEach((message) => {
+            setError(message, 'uploadFile');
+        });
+    }
+
+    const chartData = stringToChartData(newCode.code, { version: newCode.version });
     const stringCode = chartDataToString(chartData, true);
 
     legend.value = chartData?.categories;

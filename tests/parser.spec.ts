@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-
 import type { Category, ChartData } from '../src/types/index.ts';
+import { parseVersion } from '../src/utils/appTools.ts';
 import {
     stringToChartData,
     chartDataToString,
@@ -310,7 +309,7 @@ traces:
 ++ Task 2 [db]
 + Task 3 [new]`;
 
-        const result = stringToChartData(input, categories);
+        const result = stringToChartData(input, { categories });
 
         assertEqual(result.categories.size, 5);
 
@@ -441,7 +440,7 @@ traces:
 + Cat 3 [cat3b]
 + Cat 4 [cat4b]`;
 
-        const result = stringToChartData(input, categories);
+        const result = stringToChartData(input, { categories });
 
         assertEqual(result.categories.size, 8);
 
@@ -516,6 +515,78 @@ traces:
             origin: 'codeTrace',
             used: true,
         }, 'category from trace should keep previous values');
+    });
+
+    /* Edge cases and error handling */
+
+    runTest('Handle duplicate traces sections', () => {
+        const input = `traces:
++ Task 1 [web]
+
+traces:
++ Task 2 [db]`;
+
+        /* Should handle gracefully and not crash */
+        const result = stringToChartData(input);
+
+        /* The second traces section should be ignored */
+        assertEqual(result.trace.length, 1,
+            'Should only have traces from first section');
+        assertEqual(result.trace[0].name, 'Task 1',
+            'Should have first task');
+    });
+
+    runTest('Handle empty categories and traces sections', () => {
+        const input = `categories:
+
+traces:`;
+
+        const result = stringToChartData(input);
+
+        assertEqual(result.trace.length, 0, 'Should have no traces');
+        /* Categories might have some default ones, so just check it exists */
+        assertTrue(result.categories instanceof Map, 'Categories should be Map');
+    });
+
+    /* Performance test with large input */
+
+    const nbCategories = 100;
+    const nbTraces = 2000;
+    runPerf('Handle large input efficiently', 100, {
+        repetition: 10,
+        initialization: () => {
+            const lines = ['categories:'];
+
+            /* Generate 100 categories */
+            for (let idx = 0; idx < nbCategories; idx++) {
+                lines.push(`+ cat${idx}: Category ${idx} {#FF${idx.toString()
+                    .padStart(4, '0')}}`);
+            }
+
+            lines.push('', 'traces:');
+
+            /* Generate 2000 traces with nesting */
+            for (let idx = 0; idx < nbTraces; idx++) {
+                const categoryIdx = idx % nbCategories;
+                lines.push(`+ Task ${idx} [cat${categoryIdx}] // [action${idx}] Comment ${idx}`);
+                if (idx % 10 === 0) {
+                    lines.push(`++ Subtask ${idx}.1 [cat${categoryIdx}]`);
+                    lines.push(`+++ Subsubtask ${idx}.1.1 [cat${categoryIdx}]`);
+                }
+            }
+
+            const largeInput = lines.join('\n');
+
+            return largeInput;
+        },
+        test: (largeInput: string) => {
+            return stringToChartData(largeInput);
+        },
+        verification: (result: ChartData) => {
+            assertGreaterThan(result.trace.length, nbTraces - 1, 'Should parse most traces');
+            assertEqual(result.categories.size, nbCategories, `Should have ${nbCategories} categories`);
+
+        },
     });
 });
 
@@ -597,13 +668,16 @@ traces:
 </svg>`;
 
         const extracted = extractCode(svgContent);
+        const code = extracted.code;
 
-        assertTrue(extracted.length > 0, 'Should extract some code');
-        assertTrue(extracted.includes('categories:'),
+        assertTrue(code .length > 0, 'Should extract some code');
+        assertTrue(code .includes('categories:'),
             'Should include categories');
-        assertTrue(extracted.includes('traces:'), 'Should include traces');
-        assertTrue(extracted.includes('+ Test Task [web]'),
+        assertTrue(code.includes('traces:'), 'Should include traces');
+        assertTrue(code.includes('+ Test Task [web]'),
             'Should include the task');
+        assertEqual(extracted.warning.length, 0, 'should have no warnings');
+        assertDeepEqual(extracted.version, parseVersion('1.0.0'), 'should provide about which version the code was written');
     });
 
     runTest('Extract code from SVG without trace-chart comment', () => {
@@ -613,18 +687,52 @@ traces:
 </svg>`;
 
         const extracted = extractCode(svgContent);
-        assertEqual(extracted, '', 'Should return empty string');
+        const code = extracted.code;
+        assertEqual(code, '', 'Should return empty string');
+        assertDeepEqual(extracted.warning.length, 0, 'should have no warnings');
     });
 
     runTest('Extract code handles malformed SVG', () => {
         const malformedSvg = 'not an svg at all';
         const extracted = extractCode(malformedSvg);
-        assertEqual(extracted, '', 'Should return empty string for malformed');
+        const code = extracted.code;
+        assertEqual(code, '', 'Should return empty string for malformed');
+        assertEqual(extracted.warning.length, 0, 'should have no warnings');
     });
 
     runTest('Extracted code can be parsed', () => {
         const svgContent = `<svg>
-<!-- trace-chart: test
+<!-- trace-chart: test [1.1.0]
+categories:
++ api: API {#FF5733}
+
+traces:
++ API Call [api] // [request] HTTP request
+++ Process Data [api] // [process] Data processing
+-->
+</svg>`;
+
+        const extracted = extractCode(svgContent);
+        const code = extracted.code;
+
+        assertEqual(extracted.warning.length, 0, 'should have no warnings');
+        assertDeepEqual(extracted.version, parseVersion('1.1.0'), 'should provide the version of the code');
+
+        /* Test that extracted code can be successfully parsed */
+        const parsed = stringToChartData(code);
+
+        assertGreaterThan(parsed.trace.length, 0, 'Extracted code should parse to traces');
+        assertGreaterThan(parsed.categories.size, 0, 'Extracted code should have categories');
+
+        assertEqual(parsed.trace[0].name, 'API Call',
+            'Extracted trace name should match');
+        assertEqual(parsed.trace[0].category, 'api',
+            'Extracted trace category should match');
+    });
+
+    runTest('Extracted code in a newer version', () => {
+        const svgContent = `<svg>
+<!-- trace-chart: test in the future [3067.0.1]
 categories:
 + api: API {#FF5733}
 
@@ -636,87 +744,17 @@ traces:
 
         const extracted = extractCode(svgContent);
 
+        assertDeepEqual(extracted.version, parseVersion('3067.0.1'), 'should provide the version of the code');
+        assertEqual(extracted.warning.length, 1, 'should have a warning');
+
         /* Test that extracted code can be successfully parsed */
-        const parsed = stringToChartData(extracted);
+        const code = extracted.code;
+        const parsed = stringToChartData(code);
 
         assertGreaterThan(parsed.trace.length, 0, 'Extracted code should parse to traces');
         assertGreaterThan(parsed.categories.size, 0, 'Extracted code should have categories');
 
-        assertEqual(parsed.trace[0].name, 'API Call',
-            'Extracted trace name should match');
-        assertEqual(parsed.trace[0].category, 'api',
-            'Extracted trace category should match');
-    });
-
-    /* Edge cases and error handling */
-
-    runTest('Handle duplicate traces sections', () => {
-        const input = `traces:
-+ Task 1 [web]
-
-traces:
-+ Task 2 [db]`;
-
-        /* Should handle gracefully and not crash */
-        const result = stringToChartData(input);
-
-        /* The second traces section should be ignored */
-        assertEqual(result.trace.length, 1,
-            'Should only have traces from first section');
-        assertEqual(result.trace[0].name, 'Task 1',
-            'Should have first task');
-    });
-
-    runTest('Handle empty categories and traces sections', () => {
-        const input = `categories:
-
-traces:`;
-
-        const result = stringToChartData(input);
-
-        assertEqual(result.trace.length, 0, 'Should have no traces');
-        /* Categories might have some default ones, so just check it exists */
-        assertTrue(result.categories instanceof Map, 'Categories should be Map');
-    });
-
-    /* Performance test with large input */
-
-    const nbCategories = 100;
-    const nbTraces = 2000;
-    runPerf('Handle large input efficiently', 100, {
-        repetition: 10,
-        initialization: () => {
-            const lines = ['categories:'];
-
-            /* Generate 100 categories */
-            for (let idx = 0; idx < nbCategories; idx++) {
-                lines.push(`+ cat${idx}: Category ${idx} {#FF${idx.toString()
-                    .padStart(4, '0')}}`);
-            }
-
-            lines.push('', 'traces:');
-
-            /* Generate 2000 traces with nesting */
-            for (let idx = 0; idx < nbTraces; idx++) {
-                const categoryIdx = idx % nbCategories;
-                lines.push(`+ Task ${idx} [cat${categoryIdx}] // [action${idx}] Comment ${idx}`);
-                if (idx % 10 === 0) {
-                    lines.push(`++ Subtask ${idx}.1 [cat${categoryIdx}]`);
-                    lines.push(`+++ Subsubtask ${idx}.1.1 [cat${categoryIdx}]`);
-                }
-            }
-
-            const largeInput = lines.join('\n');
-
-            return largeInput;
-        },
-        test: (largeInput: string) => {
-            return stringToChartData(largeInput);
-        },
-        verification: (result: ChartData) => {
-            assertGreaterThan(result.trace.length, nbTraces - 1, 'Should parse most traces');
-            assertEqual(result.categories.size, nbCategories, `Should have ${nbCategories} categories`);
-
-        },
+        assertEqual(parsed.trace[0].name, 'API Call', 'Extracted trace name should match');
+        assertEqual(parsed.trace[0].category, 'api', 'Extracted trace category should match');
     });
 });

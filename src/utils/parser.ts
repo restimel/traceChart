@@ -1,6 +1,7 @@
 import { getColor } from './chart';
-import type { Categories, Category, ChartData, Trace } from '../types';
+import type { Categories, Category, ChartData, Trace, Version } from '../types';
 import { setCodeError } from '../store/Store';
+import { compareVersion, currentVersion, parseVersion } from './appTools';
 
 /*
  * categories:
@@ -47,7 +48,14 @@ function isValidColor(color: string | undefined): color is string {
 /* }}} */
 /* {{{ string → ChartData */
 
-export function stringToChartData(text: string, categories?: Categories): ChartData {
+type ParserOptions = {
+    categories?: Categories;
+    version?: Version;
+}
+
+export function stringToChartData(text: string, options?: ParserOptions): ChartData {
+    const categories = options?.categories;
+    const version = options?.version ?? currentVersion;
     const trimmedText = text.trim();
     const drawChart: ChartData = {
         categories: new Map([...(categories ?? [])]),
@@ -74,7 +82,18 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
         });
     }
 
-    const sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
+    let sectionRgx: RegExp;
+
+    switch (version.major) {
+        case 1:
+            /* Section are identified by "<sectionName>:" */
+            sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
+            break;
+        default:
+            /* Section are identified by "<sectionName>:" */
+            sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
+    }
+
     let noSection = true;
     const additionalCategories: string[] = [];
     let lastPosition = 0;
@@ -101,7 +120,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
             case 'categories:':
             case 'categorie:':
             case 'category:': {
-                const parsedCategories = parseCategories(result.groups.content, offset);
+                const parsedCategories = parseCategories(result.groups.content, offset, version);
 
                 parsedCategories.forEach((category) => {
                     const oldCategory = drawChart.categories.get(category.key);
@@ -120,7 +139,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
                     break;
                 }
 
-                const traceAnalyzed = parseTrace(result.groups.content, offset);
+                const traceAnalyzed = parseTrace(result.groups.content, offset, version);
 
                 drawChart.trace = traceAnalyzed.trace;
                 additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -133,7 +152,7 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     }
 
     if (noSection) {
-        const traceAnalyzed = parseTrace(trimmedText, text.indexOf(trimmedText));
+        const traceAnalyzed = parseTrace(trimmedText, text.indexOf(trimmedText), version);
 
         drawChart.trace = traceAnalyzed.trace;
         additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -214,10 +233,19 @@ export function stringToChartData(text: string, categories?: Categories): ChartD
     // return data;
 }
 
-function parseCategories(code: string, offset: number): Map<string, Category> {
+function parseCategories(code: string, offset: number, version: Version): Map<string, Category> {
     const categories = new Map<string, Category>();
 
-    const categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
+    let categoryRgx: RegExp;
+    switch (version.major) {
+        case 1:
+            /* + <categoryId>: <label> {<color>} */
+            categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
+            break;
+        default:
+            /* + <categoryId>: <label> {<color>} */
+            categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
+    }
 
     let lastPosition = 0;
 
@@ -260,12 +288,21 @@ function parseCategories(code: string, offset: number): Map<string, Category> {
     return categories;
 }
 
-function parseTrace(code: string, offset: number): {categoryUsed: string[], trace: Trace[]} {
+function parseTrace(code: string, offset: number, version: Version): {categoryUsed: string[], trace: Trace[]} {
     const traces: Trace[] = [];
     const categories = new Set<string>();
     const stack: Trace[] = [];
 
-    const traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
+    let traceRgx: RegExp;
+    switch (version.major) {
+        case 1:
+            /* <+> <name> [<category>] // [event] <comment> */
+            traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
+            break;
+        default:
+            /* <+> <name> [<category>] // [event] <comment> */
+            traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
+    }
 
     let lastPosition = 0;
 
@@ -400,13 +437,26 @@ function traceStr(trace: Trace, indentLevel: number): string {
 /* }}} */
 /* {{{ extract code from SVg */
 
-export function extractCode(svg: string): string {
-    const codeRgx = /<!--\s*trace-chart:[^\n>]*\n(?<code>(?:[^-]|-(?!->))+)\n-->/;
+export function extractCode(svg: string): { code: string; warning: string[]; version: Version } {
+    const codeRgx = /<!--\s*trace-chart:[^\n>]*?(?:\[(?<version>[\d.]+)\])?\n(?<code>(?:[^-]|-(?!->))+)\n-->/;
 
+    const warning: string[] = [];
     const result = svg.match(codeRgx);
     const code = result?.groups?.code ?? '';
+    const versionStr = result?.groups?.version ?? '1.0.0';
+    const version = parseVersion(versionStr);
 
-    return code;
+    if (compareVersion(version) === 1) {
+        warning.push('This code is newer than this app version. Some syntaxes may be not supported. They can be ignored or create parse error.');
+    }
+
+    const codeResult = {
+        code,
+        warning,
+        version,
+    };
+
+    return codeResult;
 }
 
 /* }}} */

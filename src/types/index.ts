@@ -73,3 +73,12 @@ export type ChunkCodeError = BaseCodeError & {
 };
 
 export type CodeError = LineCodeError | ChunkCodeError;
+
+export type Version = {
+    major: number;
+    minor: number;
+    build: number;
+    _value: string;
+};
+
+export type Comparison = -1 | 0 | 1;
