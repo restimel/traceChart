@@ -53,6 +53,8 @@ A trace line syntax is:
 ```
 * `<level>` (**mandatory**): indicate the level of this trace event.
 This is 1 `+` for level 1, for a child of the previous trace add another `+` (so `++` for level 2).
+It is also possible to write relative level with `{`.
+[More about hierarchy levels](./docs/hierarchies.md)
 * `<name>`  (**optional** but highly recommended): the name of the trace event.
 Special characters (such as `[]/\`) can be escaped with `\`.
 * `<category>` (**optional**): indicate in which category the trace event is linked to.

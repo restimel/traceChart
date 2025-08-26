@@ -293,15 +293,29 @@ function parseTrace(code: string, offset: number, version: Version): {categoryUs
     const categories = new Set<string>();
     const stack: Trace[] = [];
 
+    const space = String.raw`[ \t]*`;
+
     let traceRgx: RegExp;
-    switch (version.major) {
-        case 1:
-            /* <+> <name> [<category>] // [event] <comment> */
+    if (version.major >= 1) {
+        if (version.minor >= 2) {
+            /* <indentation> <name> [<category>] // [event] <comment> */
+            // const indentation = String.raw`(?<indentation>\++)`;
+            const indentation = String.raw`(?<indentation>(?:[{}]|\++\{?))`;
+            const name = String.raw`(?<name>(?:[^\n\[\/\\]|\\.)*)`;
+            const category = String.raw`(?<category>(?:[^\]\n\\]|\\.)+)`;
+            const event = String.raw`(?<event>(?:[^\n\]\\]|\\.)+)`;
+            const comment = String.raw`(?<comment>[^\n\r]*)`;
+
+            const fullRgx = String.raw`^${space}${indentation}${space}${name}${space}(?:\[${category}])?${space}(?:\/{2,}${space}(?:\[${event}]${space})?${comment})?$`;
+
+            traceRgx = new RegExp(fullRgx, 'gm');
+        } else {
+            /* <indentation> <name> [<category>] // [event] <comment> */
             traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
-            break;
-        default:
-            /* <+> <name> [<category>] // [event] <comment> */
-            traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
+        }
+    } else {
+        /* <+> <name> [<category>] // [event] <comment> */
+        traceRgx = /^\s*(?<indentation>\++)\s*(?<name>(?:[^\[\/\\\n]|\\.)+)\s*(?:\[(?<category>(?:[^\]\\\n]|\\.)+)])?[ \t]*(?:\/{2,}[ \t]*(?:\[(?<event>(?:[^\]\\\n]|\\.)+)])?(?<comment>[^\n\r]*))?$/gm;
     }
 
     let lastPosition = 0;
@@ -316,6 +330,8 @@ function parseTrace(code: string, offset: number, version: Version): {categoryUs
         }
     }
 
+    let indentBase = 0;
+    const indexStack: number[] = [];
     for (const result of code.matchAll(traceRgx)) {
         ignoredPattern(result.index);
         lastPosition = result.index + result[0].length;
@@ -326,7 +342,30 @@ function parseTrace(code: string, offset: number, version: Version): {categoryUs
         const event = unescapeLabel(result.groups?.event?.trim());
         const comment = unescapeLabel(result.groups?.comment?.trim());
 
-        const indentLevel = indentation.length - 1;
+        let localIndentation: number;
+        if (/^\++$/.test(indentation)) {
+            localIndentation = indentation.length - 1;
+        } else if (indentation === '{') {
+            localIndentation = -1;
+            indentBase++;
+            indexStack.push(1);
+        } else if (indentation === '}') {
+            const dec = indexStack.pop() ?? 0;
+            localIndentation = 0;
+            indentBase = Math.max(0, indentBase - dec);
+
+            if (!name && !event && !comment) {
+                continue;
+            }
+        } else {
+            /* case '+++{' */
+            const inc = indentation.length - 1;
+            localIndentation = -1;
+            indentBase += inc;
+            indexStack.push(inc);
+        }
+
+        const indentLevel = indentBase + localIndentation;
 
         const currentTrace: Trace = {
             name,

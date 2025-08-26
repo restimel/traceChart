@@ -789,6 +789,70 @@ traces:`;
         assertDeepEqual(trace, expectedTree, 'should create the correct tree');
     });
 
+    runTest({}, 'Should follow relative level', () => {
+        const input = `
++ Task 1
+++{ group 1
++ Task 2
+}
+++ Task 3
++++{ group 2
++ Task 4
+}
+++Task 5
+`; // the last `}` should be ignored
+        const result = stringToChartData(input);
+        const trace = result.trace;
+
+        const expectedTree = [
+            {
+                category: 'main',
+                name: 'Task 1',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'main',
+                    name: 'group 1',
+                    event: '',
+                    comment: '',
+                    subTasks: [{
+                        category: 'main',
+                        name: 'Task 2',
+                        event: '',
+                        comment: '',
+                        subTasks: [],
+                    }],
+                }, {
+                    category: 'main',
+                    name: 'Task 3',
+                    event: '',
+                    comment: '',
+                    subTasks: [{
+                        category: 'main',
+                        name: 'group 2',
+                        event: '',
+                        comment: '',
+                        subTasks: [{
+                            category: 'main',
+                            name: 'Task 4',
+                            event: '',
+                            comment: '',
+                            subTasks: [],
+                        }],
+                    }],
+                }, {
+                    category: 'main',
+                    name: 'Task 5',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }],
+            },
+        ];
+
+        assertDeepEqual(trace, expectedTree, 'should create the correct tree');
+    });
+
 
     /* Performance test with large input */
 
