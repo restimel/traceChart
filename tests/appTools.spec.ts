@@ -7,25 +7,22 @@ import {
 } from '../src/utils/appTools.ts';
 
 import {
-    assertContains,
     assertDeepEqual,
     assertEqual,
-    assertFalse,
     assertGreaterThan,
-    assertTrue,
     runTest,
     testFor,
 } from './tools.ts';
 
 testFor('version', () => {
-    runTest('should be a string', () => {
+    runTest({}, 'should be a string', () => {
         assertEqual(typeof version, 'string', 'should be a string');
         assertGreaterThan(version.split('.').length, 1, 'should contains dot');
     });
 });
 
 testFor('currentVersion', () => {
-    runTest('should be an object', () => {
+    runTest({}, 'should be an object', () => {
         assertEqual(typeof currentVersion.major, 'number', 'major should be a number');
         assertEqual(typeof currentVersion.minor, 'number', 'minor should be a number');
         assertEqual(typeof currentVersion.build, 'number', 'build should be a number');
@@ -34,7 +31,7 @@ testFor('currentVersion', () => {
 });
 
 testFor('parseVersion', () => {
-    runTest('should convert to a Version object', () => {
+    runTest({}, 'should convert to a Version object', () => {
         const versions: Array<[string, Version]> = [
             ['1.0.0', {
                 major: 1,
@@ -55,7 +52,7 @@ testFor('parseVersion', () => {
         });
     });
 
-    runTest('should generate a default Version', () => {
+    runTest({}, 'should generate a default Version', () => {
         const version1 = parseVersion('2.b.c');
         assertDeepEqual(version1, {
             major: 2,
@@ -75,7 +72,7 @@ testFor('parseVersion', () => {
 });
 
 testFor('compareVersion', () => {
-    runTest('should compare with current version', () => {
+    runTest({}, 'should compare with current version', () => {
         const version1 = parseVersion('1.0.100');
         assertEqual(compareVersion(version1), -1, `a bigger build version with a smaller minor version should be considered as old version (${version1._value} < ${version})`);
 

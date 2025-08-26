@@ -8,9 +8,75 @@ interface TestResult {
     duration: number;
 }
 
-const testResults: TestResult[] = [];
+interface TestOptions {
+    disabled?: boolean;
+    alone?: boolean;
+}
 
-export function runTest(testName: string, testFn: () => void): void {
+interface PerfTestOption<Data, Result> {
+    initialization?: () => Data;
+    test: (data: Data) => Result;
+    verification?: (result: Result) => void;
+    repetition?: number;
+}
+
+type TestPlanBase = {
+    testName: string;
+    disabled: boolean;
+    alone: boolean;
+};
+
+type SimpleTestPlan = TestPlanBase & {
+    type: 'test';
+    testFn: () => void;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PerfPlan<Data = any, Result = any> = TestPlanBase & {
+    type: 'perf';
+    maxTime: number;
+    params: PerfTestOption<Data, Result>;
+};
+
+type GroupPlan = TestPlanBase & {
+    type: 'group';
+    group: TestPlan[];
+}
+
+type TestPlan = SimpleTestPlan | PerfPlan | GroupPlan;
+
+const testResults: TestResult[] = [];
+const listTests: TestPlan[] = [];
+let context: TestPlan[] = listTests;
+let runAlone = false;
+
+export function run(list: TestPlan[] = listTests) {
+    list.forEach((plan) => {
+        if (plan.disabled) {
+            return;
+        }
+
+        switch (plan.type) {
+            case 'group':
+                execGroup(plan);
+                break;
+            case 'test':
+                execTest(plan);
+                break;
+            case 'perf':
+                execPerf(plan);
+                break;
+        }
+    });
+}
+
+function execTest(plan: SimpleTestPlan): void {
+    const {testName, testFn, alone} = plan;
+
+    if (runAlone && !alone) {
+        return;
+    }
+
     const startTime = Date.now();
 
     try {
@@ -39,6 +105,20 @@ export function runTest(testName: string, testFn: () => void): void {
         console.log(`❌ ${testName} (${duration}ms)`);
         console.log(`   Error: ${errorMessage}`);
     }
+}
+
+export function runTest(options: TestOptions, testName: string, testFn: () => void): void {
+    if (options.alone) {
+        runAlone = true;
+    }
+
+    context.push({
+        type: 'test',
+        testName,
+        testFn,
+        disabled: !!options.disabled,
+        alone: !!options.alone,
+    });
 }
 
 function perfName(testName: string, times: number[], maxTime: number): string {
@@ -71,16 +151,13 @@ function perfReport(times: number[]) {
     console.log(`       Run ${times.length} times`);
 }
 
-export function runPerf<Data, Result>(
-    testName: string,
-    maxTime: number,
-    params: {
-        initialization?: () => Data;
-        test: (data: Data) => Result;
-        verification?: (result: Result) => void;
-        repetition?: number;
+function execPerf<Data, Result>(plan: PerfPlan<Data, Result>) {
+    const { testName, maxTime, params, alone } = plan;
+
+    if (runAlone && !alone) {
+        return;
     }
-) {
+
     const startTime = Date.now();
     const data = params.initialization?.();
 
@@ -95,7 +172,7 @@ export function runPerf<Data, Result>(
 
             params.verification?.(result);
 
-            assertTrue(perfDuration <= maxTime, `should be processed in under ${maxTime}ms, mesured: ${perfDuration.toFixed(2)}ms`);
+            assertTrue(perfDuration <= maxTime, `should be processed in under ${maxTime}ms, measured: ${perfDuration.toFixed(2)}ms`);
             timeResults.push(perfDuration);
         }
 
@@ -128,10 +205,46 @@ export function runPerf<Data, Result>(
     }
 }
 
-export function testFor(groupName: string, tests: () => void) {
-    console.log(`${'-'.repeat(60)}\n🎯 ${groupName}\n`);
+export function runPerf<Data, Result>(
+    options: TestOptions,
+    testName: string,
+    maxTime: number,
+    params: PerfTestOption<Data, Result>
+) {
+    if (options.alone) {
+        runAlone = true;
+    }
 
+    context.push({
+        type: 'perf',
+        testName,
+        maxTime,
+        params,
+        disabled: !!options.disabled,
+        alone: !!options.alone,
+    });
+}
+
+function execGroup(plan: GroupPlan) {
+    console.log(`${'-'.repeat(60)}\n🎯 ${plan.testName}\n`);
+
+    run(plan.group);
+}
+
+export function testFor(groupName: string, tests: () => void) {
+    const oldContext = context;
+    const plan: GroupPlan = {
+        type: 'group',
+        testName: groupName,
+        group: [],
+        disabled: false,
+        alone: false,
+    };
+
+    context = plan.group;
     tests();
+    context = oldContext;
+    context.push(plan);
 }
 
 function error(expected: string, message?: string) {

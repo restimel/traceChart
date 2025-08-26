@@ -20,7 +20,7 @@ import {
 
 testFor('stringToChartData', () => {
 
-    runTest('Parse empty string', () => {
+    runTest({}, 'Parse empty string', () => {
         const result = stringToChartData('');
         assertDeepEqual(result, {
             categories: new Map(),
@@ -28,7 +28,7 @@ testFor('stringToChartData', () => {
         }, 'The chart should be empty');
     });
 
-    runTest('Parse simple single trace', () => {
+    runTest({}, 'Parse simple single trace', () => {
         const input = '+ Task 1';
         const result = stringToChartData(input);
 
@@ -40,7 +40,7 @@ testFor('stringToChartData', () => {
         assertEqual(result.trace[0].event, '', 'Should have no event');
     });
 
-    runTest('Parse trace with category', () => {
+    runTest({}, 'Parse trace with category', () => {
         const input = '+ Task 1 [web]';
         const result = stringToChartData(input);
 
@@ -52,7 +52,7 @@ testFor('stringToChartData', () => {
         assertEqual(result.trace[0].event, '', 'Should have no event');
     });
 
-    runTest('Parse trace with event and comment', () => {
+    runTest({}, 'Parse trace with event and comment', () => {
         const input = '+ Task 1 [web] // [start] Initial task';
         const result = stringToChartData(input);
 
@@ -63,7 +63,7 @@ testFor('stringToChartData', () => {
         assertEqual(trace.comment, 'Initial task', 'Comment should match');
     });
 
-    runTest('Parse trace with simple comment', () => {
+    runTest({}, 'Parse trace with simple comment', () => {
         const input = '+ Task 1 [web] // Some comment';
         const result = stringToChartData(input);
 
@@ -75,7 +75,7 @@ testFor('stringToChartData', () => {
         assertEqual(trace.comment, 'Some comment', 'Comment should match');
     });
 
-    runTest('Parse trace with only comment', () => {
+    runTest({}, 'Parse trace with only comment', () => {
         const input = '+  // Some comment';
         const result = stringToChartData(input);
 
@@ -85,7 +85,7 @@ testFor('stringToChartData', () => {
         assertEqual(trace.comment, 'Some comment', 'Comment should match');
     });
 
-    runTest('Parse trace with different spaces', () => {
+    runTest({}, 'Parse trace with different spaces', () => {
         const input = '+  Task 1   [web  ]  //  [ cat e gory  ]Some comment';
         const result = stringToChartData(input);
 
@@ -97,7 +97,7 @@ testFor('stringToChartData', () => {
         assertEqual(trace.comment, 'Some comment', 'Comment should match');
     });
 
-    runTest('Parse trace with special characters', () => {
+    runTest({}, 'Parse trace with special characters', () => {
         const input = String.raw`+  \'Task 1\/\/ \[type\][web\]  ]  //  [ cat \] comment ]  Some \[comment\]`;
         const result = stringToChartData(input);
 
@@ -109,7 +109,7 @@ testFor('stringToChartData', () => {
         assertEqual(trace.comment, 'Some [comment]', 'Comment should match');
     });
 
-    runTest('Parse nested traces', () => {
+    runTest({}, 'Parse nested traces', () => {
         const input = `+ Parent Task [web]
 ++ Child Task 1 [db]
 ++ Child Task 2 [cache]
@@ -143,7 +143,7 @@ testFor('stringToChartData', () => {
         assertEqual(categories.size, 3, 'Should create categories accordingly');
     });
 
-    runTest('Parse multiple root traces', () => {
+    runTest({}, 'Parse multiple root traces', () => {
         const input = `+ Task 1 [web]
 + Task 2 [db]
 + Task 3
@@ -165,7 +165,7 @@ testFor('stringToChartData', () => {
         assertEqual(categories.size, 4, 'Should create categories accordingly');
     });
 
-    runTest('Parse categories section', () => {
+    runTest({}, 'Parse categories section', () => {
         const input = `categories:
 + web: Web Server {#FF0000}
 + db: Database {#00FF00}
@@ -213,7 +213,7 @@ traces:
         assertEqual(newCategory!.order, 3, 'New should be Fourth');
     });
 
-    runTest('Parse categories without labels', () => {
+    runTest({}, 'Parse categories without labels', () => {
         const input = `categories:
 + web: {#FF0000}
 + db: {#00FF00}
@@ -228,7 +228,7 @@ traces:
         assertEqual(webCategory?.color, '#FF0000', 'Color should still work');
     });
 
-    runTest('Parse escaped characters', () => {
+    runTest({}, 'Parse escaped characters', () => {
         const input = '+ Task \\[with\\] brackets \\{and\\} braces';
         const result = stringToChartData(input);
 
@@ -236,7 +236,7 @@ traces:
             'Escaped chars should be unescaped');
     });
 
-    runTest('Should not skipped level', () => {
+    runTest({}, 'Should not skipped level', () => {
         const input = `
 + root
 +++ child
@@ -253,7 +253,7 @@ traces:
         assertTrue(hasFailed, 'should detect issue in the trace');
     });
 
-    runTest('Inherit category from parent', () => {
+    runTest({}, 'Inherit category from parent', () => {
         const input = `+ Parent Task [web]
 ++ Child without category
 +++ Grandchild without category`;
@@ -269,7 +269,7 @@ traces:
         assertEqual(grandchild?.category, 'web', 'Grandchild inherits category');
     });
 
-    runTest('Add defined categories', () => {
+    runTest({}, 'Add defined categories', () => {
         const categories = new Map<string, Category>([
             [ 'web', {
                 key: 'web',
@@ -361,7 +361,7 @@ traces:
         }, 'New category should be added');
     });
 
-    runTest('Categories definition priority', () => {
+    runTest({}, 'Categories definition priority', () => {
         const categories = new Map<string, Category>([
             [ 'cat1', {
                 key: 'cat1',
@@ -519,7 +519,7 @@ traces:
 
     /* Edge cases and error handling */
 
-    runTest('Handle duplicate traces sections', () => {
+    runTest({}, 'Handle duplicate traces sections', () => {
         const input = `traces:
 + Task 1 [web]
 
@@ -536,7 +536,7 @@ traces:
             'Should have first task');
     });
 
-    runTest('Handle empty categories and traces sections', () => {
+    runTest({}, 'Handle empty categories and traces sections', () => {
         const input = `categories:
 
 traces:`;
@@ -548,11 +548,253 @@ traces:`;
         assertTrue(result.categories instanceof Map, 'Categories should be Map');
     });
 
+
+    runTest({}, 'Parse relative level', () => {
+        const input = `
++ Task 1
+++ Task 2
+{
++ Task 3
+}
+{ sub-task
+{ sub-sub-task
++ Task 4
+++ Task 5
++++ Task 6
+}
++ Task 7
+}
+`;
+        const result = stringToChartData(input);
+        const trace = result.trace;
+
+        assertEqual(trace.length, 3, 'should have 3 root traces');
+
+        const child2 = trace[1];
+
+        assertEqual(child2.name, '', 'the relative sub task should have no name');
+        assertEqual(child2.subTasks?.length, 1, 'it should have only one sub-task (task3)');
+
+
+        const child3 = trace[2];
+
+        assertEqual(child3.name, 'sub-task', 'the 2nd relative sub task should be named');
+        assertEqual(child3.subTasks?.length, 2, 'it should have only two sub-tasks');
+
+        const expectedTree = [
+            {
+                category: 'main',
+                name: 'Task 1',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'main',
+                    name: 'Task 2',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }],
+            },
+            {
+                category: 'main',
+                name: '',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'main',
+                    name: 'Task 3',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }],
+            },
+            {
+                category: 'main',
+                name: 'sub-task',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'main',
+                    name: 'sub-sub-task',
+                    event: '',
+                    comment: '',
+                    subTasks: [{
+                        category: 'main',
+                        name: 'Task 4',
+                        event: '',
+                        comment: '',
+                        subTasks: [{
+                            category: 'main',
+                            name: 'Task 5',
+                            event: '',
+                            comment: '',
+                            subTasks: [{
+                                category: 'main',
+                                name: 'Task 6',
+                                event: '',
+                                comment: '',
+                                subTasks: [],
+                            }],
+                        }],
+                    }],
+                }, {
+                    category: 'main',
+                    name: 'Task 7',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }],
+            },
+        ];
+
+        assertDeepEqual(trace, expectedTree, 'should create the correct tree');
+    });
+
+    runTest({}, 'Parse unclosed relative level', () => {
+        const input = `
+{ group1 [root]
++ Task 1
+{ group2 [child] // comment
++ Task 2
++ Task 3
+`;
+        const result = stringToChartData(input);
+        const trace = result.trace;
+
+        assertEqual(trace.length, 1, 'should have 1 root trace');
+
+        const expectedTree = [
+            {
+                category: 'root',
+                name: 'group1',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'root',
+                    name: 'Task 1',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }, {
+                    category: 'child',
+                    name: 'group2',
+                    event: '',
+                    comment: 'comment',
+                    subTasks: [{
+                        category: 'child',
+                        name: 'Task 2',
+                        event: '',
+                        comment: '',
+                        subTasks: [],
+                    }, {
+                        category: 'child',
+                        name: 'Task 3',
+                        event: '',
+                        comment: '',
+                        subTasks: [],
+                    }],
+                }],
+            },
+        ];
+
+        assertDeepEqual(trace, expectedTree, 'should create the correct tree');
+    });
+
+    runTest({}, 'Parse relative level with new context', () => {
+        const input = `
+{ group 1
++ Task 1
+++{ group 2
++ Task 2
+{ group 3
++ Task 3
+}
++ Task 4
+}
++ Task 5
+}
++ Task 6
+}
++ Task 7
+`; // the last `}` should be ignored
+        const result = stringToChartData(input);
+        const trace = result.trace;
+
+        assertEqual(trace.length, 3, 'should have 3 root traces');
+
+        const expectedTree = [
+            {
+                category: 'main',
+                name: 'group 1',
+                event: '',
+                comment: '',
+                subTasks: [{
+                    category: 'main',
+                    name: 'Task 1',
+                    event: '',
+                    comment: '',
+                    subTasks: [{
+                        category: 'main',
+                        name: 'group 2',
+                        event: '',
+                        comment: '',
+                        subTasks: [{
+                            category: 'main',
+                            name: 'Task 2',
+                            event: '',
+                            comment: '',
+                            subTasks: [],
+                        }, {
+                            category: 'main',
+                            name: 'group 3',
+                            event: '',
+                            comment: '',
+                            subTasks: [{
+                                category: 'main',
+                                name: 'Task 3',
+                                event: '',
+                                comment: '',
+                                subTasks: [],
+                            }],
+                        }, {
+                            category: 'main',
+                            name: 'Task 4',
+                            event: '',
+                            comment: '',
+                            subTasks: [],
+                        }],
+                    }],
+                }, {
+                    category: 'main',
+                    name: 'Task 5',
+                    event: '',
+                    comment: '',
+                    subTasks: [],
+                }],
+            }, {
+                category: 'main',
+                name: 'Task 6',
+                event: '',
+                comment: '',
+                subTasks: [],
+            }, {
+                category: 'main',
+                name: 'Task 7',
+                event: '',
+                comment: '',
+                subTasks: [],
+            },
+        ];
+
+        assertDeepEqual(trace, expectedTree, 'should create the correct tree');
+    });
+
+
     /* Performance test with large input */
 
     const nbCategories = 100;
     const nbTraces = 2000;
-    runPerf('Handle large input efficiently', 100, {
+    runPerf({}, 'Handle large input efficiently', 100, {
         repetition: 10,
         initialization: () => {
             const lines = ['categories:'];
@@ -591,7 +833,7 @@ traces:`;
 });
 
 testFor('chartDataToString', () => {
-    runTest('Serialize simple chart data', () => {
+    runTest({}, 'Serialize simple chart data', () => {
         const input = '+ Task 1 [web] // [start] Comment';
         const chartData = stringToChartData(input);
         const serialized = chartDataToString(chartData);
@@ -604,7 +846,7 @@ testFor('chartDataToString', () => {
             'Should include the task');
     });
 
-    runTest('Serialize with onlyCode flag', () => {
+    runTest({}, 'Serialize with onlyCode flag', () => {
         const input = `
 categories:
 + web: {#012345}
@@ -620,7 +862,7 @@ traces:
             'Should include traces section');
     });
 
-    runTest('Round-trip conversion preserves data', () => {
+    runTest({}, 'Round-trip conversion preserves data', () => {
         const originalInput = `category:
 + web: Web Server {#FF0000}
 + db: Database {#00FF00}
@@ -655,7 +897,7 @@ trace:
 });
 
 testFor('extractCode', () => {
-    runTest('Extract code from SVG comment', () => {
+    runTest({}, 'Extract code from SVG comment', () => {
         const svgContent = `<svg viewBox="0 0 100 100">
 <!-- trace-chart: metadata
 categories:
@@ -680,7 +922,7 @@ traces:
         assertDeepEqual(extracted.version, parseVersion('1.0.0'), 'should provide about which version the code was written');
     });
 
-    runTest('Extract code from SVG without trace-chart comment', () => {
+    runTest({}, 'Extract code from SVG without trace-chart comment', () => {
         const svgContent = `<svg viewBox="0 0 100 100">
 <!-- regular comment -->
 <rect width="100" height="100" fill="red"/>
@@ -692,7 +934,7 @@ traces:
         assertDeepEqual(extracted.warning.length, 0, 'should have no warnings');
     });
 
-    runTest('Extract code handles malformed SVG', () => {
+    runTest({}, 'Extract code handles malformed SVG', () => {
         const malformedSvg = 'not an svg at all';
         const extracted = extractCode(malformedSvg);
         const code = extracted.code;
@@ -700,7 +942,7 @@ traces:
         assertEqual(extracted.warning.length, 0, 'should have no warnings');
     });
 
-    runTest('Extracted code can be parsed', () => {
+    runTest({}, 'Extracted code can be parsed', () => {
         const svgContent = `<svg>
 <!-- trace-chart: test [1.1.0]
 categories:
@@ -730,7 +972,7 @@ traces:
             'Extracted trace category should match');
     });
 
-    runTest('Extracted code in a newer version', () => {
+    runTest({}, 'Extracted code in a newer version', () => {
         const svgContent = `<svg>
 <!-- trace-chart: test in the future [3067.0.1]
 categories:
