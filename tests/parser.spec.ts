@@ -853,6 +853,54 @@ traces:`;
         assertDeepEqual(trace, expectedTree, 'should create the correct tree');
     });
 
+    runTest({}, 'Parse code with parseFromConsole', () => {
+        const input = `categories:
++ web: Web Server {#FF0000}
+parser.ts:480 + db: Database {#00FF00}
+any_file-with.chars.js:1 + cache: Cache Layer {#0000FF}
+
+traces:
++ Task 1 [web]
+parser.ts:480 ++ Task 2 [db]
+any_file-with.chars.js:1 + Task 3 [new]`;
+
+        const result = stringToChartData(input, { parseFromConsole: true });
+
+        assertGreaterThan(result.categories.size, 3);
+
+        const webCategory = result.categories.get('web');
+        assertTrue(webCategory !== undefined, 'Web category should exist');
+        assertEqual(webCategory?.label, 'Web Server', 'Web label');
+        assertEqual(webCategory?.color, '#FF0000', 'Web color');
+        assertTrue(webCategory!.used, 'Web should be used');
+        assertEqual(webCategory!.origin, 'codeCategory', 'Web should come from category');
+        assertEqual(webCategory!.order, 0, 'Web should be first');
+
+        const dbCategory = result.categories.get('db');
+        assertTrue(dbCategory !== undefined, 'DB category should exist');
+        assertEqual(dbCategory?.label, 'Database', 'DB label');
+        assertEqual(dbCategory?.color, '#00FF00', 'DB color');
+        assertTrue(dbCategory!.used, 'DB should be used');
+        assertEqual(dbCategory!.origin, 'codeCategory', 'DB should come from code');
+        assertEqual(dbCategory!.order, 1, 'DB should be second');
+
+
+        const cacheCategory = result.categories.get('cache');
+        assertTrue(cacheCategory !== undefined, 'Cache category should exist');
+        assertEqual(cacheCategory?.label, 'Cache Layer', 'Cache label');
+        assertEqual(cacheCategory?.color, '#0000FF', 'Cache color');
+        assertFalse(cacheCategory!.used, 'Cache should not be used');
+        assertEqual(cacheCategory!.origin, 'codeCategory', 'Cache should come from code');
+        assertEqual(cacheCategory!.order, 2, 'Cache should be Third');
+
+        const newCategory = result.categories.get('new');
+        assertTrue(newCategory !== undefined, 'New category should exist');
+        assertEqual(newCategory?.label, '', 'New label');
+        assertTrue(newCategory!.used, 'New should be used');
+        assertEqual(newCategory!.origin, 'codeTrace', 'New should come from code');
+        assertEqual(newCategory!.order, 3, 'New should be Fourth');
+    });
+
 
     /* Performance test with large input */
 

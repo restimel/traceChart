@@ -74,3 +74,5 @@ In this case, the group’s hierarchy restarts from 1, relative to where it was 
 + Task 6        // level 1
 
 ```
+
+**Note**: Relative hierarchies will be rewritten in Absolute hierarchy when generating SVG.

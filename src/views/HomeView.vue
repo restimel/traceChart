@@ -34,7 +34,13 @@ import { computed, ref } from 'vue';
 import CodeEditor from '@/components/CodeEditor.vue';
 import LegendEditor from '@/components/LegendEditor.vue';
 import SvgViewer from '@/components/SvgViewer.vue';
-import { code, legend, setError, updateLegend } from '@/store/Store';
+import {
+    code,
+    legend,
+    parameters,
+    setError,
+    updateLegend,
+} from '@/store/Store';
 import { processFile } from '@/utils/fileUtils';
 import { chartDataToString, extractCode, stringToChartData } from '@/utils/parser';
 import { generateSvgFromCode, type SvgInfo } from '@/utils/svgGenerator';
@@ -49,7 +55,7 @@ const svgParsing = computed<SvgInfo | Partial<SvgInfo>>(() => {
         return {};
     }
 
-    return generateSvgFromCode(value, legend.value);
+    return generateSvgFromCode(value, legend.value, { parseFromConsole: parameters.value.parseFromConsole});
 });
 
 const svgContent = computed(() => {

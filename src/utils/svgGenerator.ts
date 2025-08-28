@@ -12,12 +12,16 @@ export type SvgInfo = {
     chartData: ChartData | null;
 }
 
-export const generateSvgFromCode = (code: string, categories?: Categories): SvgInfo => {
+type ParseOptions = {
+    parseFromConsole?: boolean;
+}
+
+export const generateSvgFromCode = (code: string, categories?: Categories, options: ParseOptions = {}): SvgInfo => {
     clearError('code');
     resetCodeErrors();
 
     try {
-        const data = stringToChartData(code, { categories });
+        const data = stringToChartData(code, { categories, parseFromConsole: options.parseFromConsole });
         const svg = svgBody(data);
 
         return {

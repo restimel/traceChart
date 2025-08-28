@@ -51,11 +51,19 @@ function isValidColor(color: string | undefined): color is string {
 type ParserOptions = {
     categories?: Categories;
     version?: Version;
+    parseFromConsole?: boolean;
 }
+
+type SectionOptions = {
+    offset: number;
+    version: Version;
+    parseFromConsole: boolean;
+};
 
 export function stringToChartData(text: string, options?: ParserOptions): ChartData {
     const categories = options?.categories;
     const version = options?.version ?? currentVersion;
+    const parseFromConsole = options?.parseFromConsole ?? false;
     const trimmedText = text.trim();
     const drawChart: ChartData = {
         categories: new Map([...(categories ?? [])]),
@@ -84,14 +92,12 @@ export function stringToChartData(text: string, options?: ParserOptions): ChartD
 
     let sectionRgx: RegExp;
 
-    switch (version.major) {
-        case 1:
-            /* Section are identified by "<sectionName>:" */
-            sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
-            break;
-        default:
-            /* Section are identified by "<sectionName>:" */
-            sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
+    if (version.major >= 1) {
+        /* Section are identified by "<sectionName>:" */
+        sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
+    } else {
+        /* Section are identified by "<sectionName>:" */
+        sectionRgx = /(?:^|\n)(?<sectionName>\s*\w+:\s*)(?<content>(?:\n\+[^\n]+|\n(?![ \t]*\w+:)[^\n]*)+)/g;
     }
 
     let noSection = true;
@@ -120,7 +126,7 @@ export function stringToChartData(text: string, options?: ParserOptions): ChartD
             case 'categories:':
             case 'categorie:':
             case 'category:': {
-                const parsedCategories = parseCategories(result.groups.content, offset, version);
+                const parsedCategories = parseCategories(result.groups.content, { offset, version, parseFromConsole });
 
                 parsedCategories.forEach((category) => {
                     const oldCategory = drawChart.categories.get(category.key);
@@ -139,7 +145,7 @@ export function stringToChartData(text: string, options?: ParserOptions): ChartD
                     break;
                 }
 
-                const traceAnalyzed = parseTrace(result.groups.content, offset, version);
+                const traceAnalyzed = parseTrace(result.groups.content, { offset, version, parseFromConsole });
 
                 drawChart.trace = traceAnalyzed.trace;
                 additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -152,7 +158,11 @@ export function stringToChartData(text: string, options?: ParserOptions): ChartD
     }
 
     if (noSection) {
-        const traceAnalyzed = parseTrace(trimmedText, text.indexOf(trimmedText), version);
+        const traceAnalyzed = parseTrace(trimmedText, {
+            offset: text.indexOf(trimmedText),
+            version,
+            parseFromConsole,
+        });
 
         drawChart.trace = traceAnalyzed.trace;
         additionalCategories.push(...traceAnalyzed.categoryUsed);
@@ -233,18 +243,25 @@ export function stringToChartData(text: string, options?: ParserOptions): ChartD
     // return data;
 }
 
-function parseCategories(code: string, offset: number, version: Version): Map<string, Category> {
+function parseCategories(code: string, options: SectionOptions): Map<string, Category> {
+    const { offset, version, parseFromConsole } = options;
     const categories = new Map<string, Category>();
 
     let categoryRgx: RegExp;
-    switch (version.major) {
-        case 1:
-            /* + <categoryId>: <label> {<color>} */
-            categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
-            break;
-        default:
-            /* + <categoryId>: <label> {<color>} */
-            categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
+    if (version.major >= 1) {
+        /* + <categoryId>: <label> {<color>} */
+        const consoleFileName = parseFromConsole ?
+            String.raw`(?:[^+{} ][^ ]+ )?` :
+            '';
+        const categoryId = String.raw`(?<categoryId>(?:[^:\\\n]|\\.)+)`;
+        const label = String.raw`(?<label>(?:[^{\\\n]|\\.)+)?`;
+        const color = String.raw`(?<color>(?:[^}\\\n]|\\.)+)`;
+
+        const fullRgx = String.raw`^\s*${consoleFileName}\+\s*${categoryId}:\s*${label}\{${color}\}\s*$`;
+        categoryRgx = new RegExp(fullRgx, 'gm');
+    } else {
+        /* + <categoryId>: <label> {<color>} */
+        categoryRgx = /^\s*\+\s*(?<categoryId>(?:[^:\\\n]|\\.)+):\s*(?<label>(?:[^{\\\n]|\\.)+)?\{(?<color>(?:[^}\\\n]|\\.)+)\}/gm;
     }
 
     let lastPosition = 0;
@@ -288,7 +305,8 @@ function parseCategories(code: string, offset: number, version: Version): Map<st
     return categories;
 }
 
-function parseTrace(code: string, offset: number, version: Version): {categoryUsed: string[], trace: Trace[]} {
+function parseTrace(code: string, options: SectionOptions): {categoryUsed: string[], trace: Trace[]} {
+    const { offset, version, parseFromConsole } = options;
     const traces: Trace[] = [];
     const categories = new Set<string>();
     const stack: Trace[] = [];
@@ -299,14 +317,16 @@ function parseTrace(code: string, offset: number, version: Version): {categoryUs
     if (version.major >= 1) {
         if (version.minor >= 2) {
             /* <indentation> <name> [<category>] // [event] <comment> */
-            // const indentation = String.raw`(?<indentation>\++)`;
+            const consoleFileName = parseFromConsole ?
+                String.raw`(?:[^+{} ][^ ]+ )?` :
+                '';
             const indentation = String.raw`(?<indentation>(?:[{}]|\++\{?))`;
             const name = String.raw`(?<name>(?:[^\n\[\/\\]|\\.)*)`;
             const category = String.raw`(?<category>(?:[^\]\n\\]|\\.)+)`;
             const event = String.raw`(?<event>(?:[^\n\]\\]|\\.)+)`;
             const comment = String.raw`(?<comment>[^\n\r]*)`;
 
-            const fullRgx = String.raw`^${space}${indentation}${space}${name}${space}(?:\[${category}])?${space}(?:\/{2,}${space}(?:\[${event}]${space})?${comment})?$`;
+            const fullRgx = String.raw`^${space}${consoleFileName}${indentation}${space}${name}${space}(?:\[${category}])?${space}(?:\/{2,}${space}(?:\[${event}]${space})?${comment})?$`;
 
             traceRgx = new RegExp(fullRgx, 'gm');
         } else {

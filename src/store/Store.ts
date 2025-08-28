@@ -8,10 +8,17 @@ type AppError = {
     message: string;
 } | null;
 
+type Parameters = {
+    parseFromConsole: boolean;
+}
+
 export const error = ref<AppError>(null);
 export const codeErrors = ref<CodeError[]>([]);
 export const code = ref<string>('');
 export const legend = ref<Categories>(new Map());
+export const parameters = ref<Parameters>({
+    parseFromConsole: false,
+});
 
 function compareLegend(legend1: Categories, legend2: Categories): boolean {
     if (legend1.size !== legend2.size) {
@@ -88,4 +95,8 @@ export function setCodeError(codeError: string, fullCode: string, message: strin
     };
 
     codeErrors.value.push(error);
+}
+
+export function toggleParseFromConsole(value?: boolean) {
+    parameters.value.parseFromConsole = typeof value === 'boolean' ? value : !parameters.value.parseFromConsole;
 }

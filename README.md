@@ -73,6 +73,11 @@ A category line syntax is:
 * `<label>` (**optional**): The label to display in the legend section.
 * `<color>` (**optional**): The color to use for these trace events.
 
+## More information
+
+* [syntax for hierarchies](./docs/hierarchies.md)
+* [Some use case example](./docs/useCases.md)
+
 ## Installation (for contribution)
 
 Clone the repository:

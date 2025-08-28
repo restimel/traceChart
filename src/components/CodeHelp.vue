@@ -15,8 +15,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import VueMarkdownRender from 'vue-markdown-render';
 
+export type MessageKind = '' | 'code' | 'parseFromConsole';
+
+const props = defineProps<{
+    message: MessageKind;
+}>();
 const emit = defineEmits<{
     close: []
 }>();
@@ -30,7 +36,7 @@ const options = {
     quotes: '“”‘’', /* ['«\xA0', '\xA0»', '‹\xA0', '\xA0›'] for french */
 };
 
-const content = `
+const codeExplanation = `
 ## Trace syntax
 
 A trace line syntax is:
@@ -67,6 +73,34 @@ traces:
 +++ svgDefs[svgGenerator]
 \`\`\`
 `;
+
+const parseFromConsoleExplanation = `
+## Parse from console
+
+When copy-pasting text from the browser console, each line often includes the file name and line number before the actual message.
+
+Instead of manually cleaning the text, this option will automatically **ignore the first word of each line**.
+
+For example, this input:
+\`\`\`
+CodeEditor.vue:120 + onHelp()
+\`\`\`
+will be parsed as
+\`\`\`
++ onHelp()
+\`\`\`
+`;
+
+const content = computed<string>(() => {
+    switch (props.message) {
+        case 'code':
+            return codeExplanation;
+        case 'parseFromConsole':
+            return parseFromConsoleExplanation;
+        default:
+            return '';
+    }
+});
 
 function close() {
     emit('close');

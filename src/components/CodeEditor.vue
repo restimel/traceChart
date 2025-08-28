@@ -2,10 +2,23 @@
     <div class="code-editor">
         <h3 class="header">
             Code Editor
-            <span class="help" @click="onHelp">
+            <span class="help" @click="onHelp('code')">
                 ?
             </span>
         </h3>
+        <div class="options">
+            <label>
+                <input
+                    type="checkbox"
+                    :value="parameters.parseFromConsole"
+                    @input="toggleParseFromConsole()"
+                >
+                Parse from console
+                <span class="help" @click.stop.prevent="onHelp('parseFromConsole')">
+                    ?
+                </span>
+            </label>
+        </div>
         <code-mirror
             :class="{ error: error?.origin === 'code' }"
             v-model="localCode"
@@ -18,14 +31,14 @@
                 placeholder(placeholderValue)
             ]"
         />
-        <CodeHelp v-if="openCodeHelp" @close="openCodeHelp = false" />
+        <CodeHelp v-if="!!codeHelpMessage" :message="codeHelpMessage" @close="codeHelpMessage = ''" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { codeErrors, error } from '@/store/Store';
-import CodeHelp from '@/components/CodeHelp.vue';
+import { codeErrors, error, parameters, toggleParseFromConsole } from '@/store/Store';
+import CodeHelp, { type MessageKind } from '@/components/CodeHelp.vue';
 import CodeMirror from 'vue-codemirror6';
 import { EditorView, placeholder } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
@@ -43,7 +56,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const localCode = ref(props.code);
-const openCodeHelp = ref(false);
+const codeHelpMessage = ref<MessageKind>('');
 
 const onCodeChange = () => {
     emit('update:code', localCode.value);
@@ -102,8 +115,8 @@ watch(() => props.code, (newCode) => {
     localCode.value = newCode;
 });
 
-function onHelp() {
-    openCodeHelp.value = true;
+function onHelp(value: MessageKind) {
+    codeHelpMessage.value = value;
 }
 </script>
 
@@ -130,5 +143,10 @@ function onHelp() {
     background-color: var(--color-text);
     color: var(--color-background);
     text-align: center;
+}
+
+.options {
+    font-size: 0.85em;
+    text-align: right;
 }
 </style>
