@@ -145,6 +145,10 @@ function close() {
     padding: var(--small-padding);
 }
 
+.modal :deep(strong) {
+    font-weight: bolder;
+}
+
 .close-btn {
     position: absolute;
     top: 0;
