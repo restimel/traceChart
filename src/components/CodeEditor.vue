@@ -11,7 +11,7 @@
                 <input
                     type="checkbox"
                     :value="parameters.parseFromConsole"
-                    @input="toggleParseFromConsole()"
+                    @input="changeOption()"
                 >
                 Parse from console
                 <span class="help" @click.stop.prevent="onHelp('parseFromConsole')">
@@ -54,6 +54,7 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+let needsRefresh = false;
 
 const localCode = ref(props.code);
 const codeHelpMessage = ref<MessageKind>('');
@@ -109,11 +110,24 @@ const customLinter = linter((view) => {
     });
 
     return diagnostics;
+}, {
+    needsRefresh: () => {
+        const refresh = needsRefresh;
+
+        needsRefresh = false;
+
+        return refresh;
+    },
 });
 
 watch(() => props.code, (newCode) => {
     localCode.value = newCode;
 });
+
+function changeOption() {
+    toggleParseFromConsole();
+    needsRefresh = true;
+}
 
 function onHelp(value: MessageKind) {
     codeHelpMessage.value = value;
